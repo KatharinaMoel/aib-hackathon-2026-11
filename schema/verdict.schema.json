@@ -1,0 +1,31 @@
+{
+  "$comment": "DRAFT – align `call` with the organisers' labels before building on it.",
+  "type": "object",
+  "required": ["product_url", "call", "reasons", "run_id"],
+  "properties": {
+    "product_url": {"type": "string"},
+    "call": {"enum": ["trust", "caution", "hollow", "unclear"]},
+    "alive_product": {"type": ["boolean", "null"]},
+    "trust_company": {"type": ["boolean", "null"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim", "axis", "direction", "url", "quote", "tier", "basis"],
+        "properties": {
+          "claim": {"type": "string", "description": "one sentence"},
+          "axis": {"enum": ["looks", "substance", "risk"]},
+          "direction": {"enum": ["pro", "con"]},
+          "url": {"type": "string", "description": "must be a page our pipeline fetched"},
+          "archived_url": {"type": "string"},
+          "fetched_at": {"type": "string"},
+          "quote": {"type": "string", "maxLength": 300, "description": "verbatim from the fetched page"},
+          "tier": {"enum": ["independent", "vendor_self", "hypothesis"], "description": "vendor_self only for looks; hypothesis never counts"},
+          "basis": {"enum": ["fetched", "model"]}
+        }
+      }
+    },
+    "run_id": {"type": "string", "description": "git SHA + model + prompt hash"}
+  }
+}

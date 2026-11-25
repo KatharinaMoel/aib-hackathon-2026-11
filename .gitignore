@@ -1,0 +1,14 @@
+# secrets
+.env
+.env.*
+!.env.example
+# participant-only material and results (must stay inside the event)
+data/
+out/
+results/
+*.labels.*
+# caches
+.cache/
+__pycache__/
+.venv/
+node_modules/

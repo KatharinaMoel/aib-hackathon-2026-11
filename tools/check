@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Standards check – run before opening a PR: `tools/check`.
+
+Prints each step before it runs it. Changes nothing. Fails (exit 1) only for private files or
+token-like strings; everything else is a reminder.
+"""
+import re
+import subprocess
+import sys
+
+BRANCH = re.compile(r"^[a-z0-9-]+/[a-z0-9._-]+$")  # <name>/<topic>
+TYPES = ("feat", "fix", "docs", "test", "chore", "refactor")  # same list as AGENTS.md, "Git flow"
+COMMIT = re.compile(rf"^({'|'.join(TYPES)}): .+")
+PRIVATE = [r"^data/", r"^out/", r"^results/", r"(^|/)\.env($|\.)(?!example$)", r"\.labels\."]
+TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{30,}|tvly-[A-Za-z0-9]{20,})")
+
+counts = {"ok": 0, "look": 0, "fail": 0}
+
+
+def git(*args):
+    return subprocess.run(["git", *args], capture_output=True, text=True)
+
+
+def report(good, text, hard=False):
+    kind = "ok" if good else ("fail" if hard else "look")
+    counts[kind] += 1
+    print(f"  {kind.upper():>4}  {text}")
+
+
+has_main = git("rev-parse", "--verify", "--quiet", "origin/main").returncode == 0
+
+print("1/4 Branch name is <name>/<topic>, so everyone sees who works on what.")
+branch = git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+report(bool(BRANCH.match(branch)), f"branch '{branch}'")
+
+print(f"2/4 Commit messages since origin/main read '<type>: <summary>', type one of {', '.join(TYPES)}.")
+if has_main:
+    subjects = [s for s in git("log", "--format=%s", "origin/main..HEAD").stdout.splitlines() if s]
+    unclear = [s for s in subjects if not COMMIT.match(s)]
+    report(not unclear, f"{len(subjects)} commit(s)" + (f", unclear: {unclear[:3]}" if unclear else ""))
+else:
+    report(False, "origin/main not found – run `git fetch origin`; steps 2 and 4 not checked")
+
+print("3/4 No private files tracked (data/, out/, results/, .env, *.labels.*) – event data stays inside the event.")
+private = [p for p in git("ls-files").stdout.splitlines() if any(re.search(r, p) for r in PRIVATE)]
+report(not private, "private paths: " + (", ".join(private) if private else "none"), hard=True)
+
+print("4/4 No token-like strings in committed and staged changes since origin/main – keys belong in .env.")
+if has_main:
+    leak = TOKEN.search(git("diff", "origin/main...HEAD").stdout + git("diff", "--cached").stdout)
+    report(leak is None, "token-like strings: " + ("found – remove it and rotate the key" if leak else "none"), hard=True)
+else:
+    report(False, "skipped (no origin/main)")
+
+print("Before the PR: the description says what the diff cannot show; Norma findings go into DECISIONS.md.")
+print(f"{counts['ok']} ok, {counts['look']} to look at, {counts['fail']} must fix.")
+sys.exit(1 if counts["fail"] else 0)

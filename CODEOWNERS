@@ -1,0 +1,6 @@
+# changes to agent rules, agent config and CI need the repo owner's review
+/AGENTS.md        @KatharinaMoel
+/CLAUDE.md        @KatharinaMoel
+/.claude/         @KatharinaMoel
+/.mcp.json        @KatharinaMoel
+/.github/         @KatharinaMoel
