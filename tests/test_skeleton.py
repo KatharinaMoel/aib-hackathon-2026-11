@@ -116,3 +116,20 @@ def test_ipv4_mapped_private_address_is_not_public():
     assert _not_public(ipaddress.ip_address("::ffff:127.0.0.1"))
     assert _not_public(ipaddress.ip_address("10.0.0.1"))
     assert not _not_public(ipaddress.ip_address("93.184.215.14"))
+    assert _not_public(ipaddress.ip_address("64:ff9b::7f00:1"))  # NAT64 form of 127.0.0.1
+    assert _not_public(ipaddress.ip_address("fc00::1"))  # outside 2000::/3
+    assert _not_public(ipaddress.ip_address("0.0.0.0"))
+
+
+def test_compressed_answer_is_refused():
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(200, content=b"x", headers={"content-encoding": "gzip"})
+        )
+    )
+    try:
+        fetch(URL, client=client, guard=lambda checked: None)
+    except FetchError as err:
+        assert "compressed" in str(err)
+    else:
+        raise AssertionError("gzip answer was read")

@@ -27,21 +27,39 @@ class FetchError(Exception):
     """The page could not be fetched. The caller records it under `not_checked`, never as a con."""
 
 
+GLOBAL_V6 = ipaddress.ip_network("2000::/3")  # the only IPv6 range used on the public internet
+NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+
+
 def _not_public(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    """True for addresses that point into our own machine or network, incl. IPv6 forms of IPv4 ones."""
+    """True unless the address is clearly public. Fails closed: when in doubt, refuse.
+
+    IPv6 forms that carry an IPv4 address (IPv4-mapped, 6to4, Teredo, NAT64) are judged by that IPv4 address.
+    """
     if isinstance(ip, ipaddress.IPv6Address):
-        if ip.ipv4_mapped:
-            ip = ip.ipv4_mapped
-        elif ip.sixtofour:
-            ip = ip.sixtofour
-    return not ip.is_global or ip.is_multicast
+        embedded = ip.ipv4_mapped or ip.sixtofour or (ip.teredo[1] if ip.teredo else None)
+        if embedded is None and any(ip in net for net in NAT64):
+            embedded = ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+        if embedded is not None:
+            ip = embedded
+        elif ip not in GLOBAL_V6:
+            return True
+    return (
+        not ip.is_global
+        or ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_unspecified
+        or ip.is_reserved
+        or ip.is_multicast
+    )
 
 
 def check_url(url: str) -> None:
     """Refuse URLs that could reach our own machine or network: only public http(s) hosts.
 
-    Limit (not verified to matter here): DNS can change between this check and the connection ("DNS
-    rebinding"). Pinning the checked IP for the connection is a follow-up in starter issue #2.
+    DNS can change between this check and the connection ("DNS rebinding"), so `fetch` checks the address it
+    actually connected to again before it reads the page.
     """
     parts = urlparse(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
@@ -63,16 +81,35 @@ def html_to_text(html: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _peer_is_public(response: httpx.Response) -> bool:
+    """Check the address we really connected to (guards against DNS rebinding). Unknown = mock transport = ok."""
+    stream = response.extensions.get("network_stream")
+    peer = stream.get_extra_info("server_addr") if stream is not None else None
+    if not peer:
+        return True
+    return not _not_public(ipaddress.ip_address(str(peer[0]).split("%")[0]))
+
+
 def _read_capped(response: httpx.Response, started: float) -> bytes:
-    """Read at most MAX_BYTES, and stop when the overall deadline has passed."""
-    body = b""
-    for chunk in response.iter_bytes():
-        body += chunk
-        if len(body) > MAX_BYTES:
-            return body[:MAX_BYTES]
-        if time.monotonic() - started > DEADLINE:
-            raise FetchError(f"{response.url}: took longer than {DEADLINE:.0f} s")
-    return body
+    """Read at most MAX_BYTES of the raw body and stop when the overall deadline has passed.
+
+    We ask for uncompressed pages and refuse compressed ones, so a small compressed answer cannot expand
+    into gigabytes in memory ("decompression bomb").
+    """
+    encoding = response.headers.get("content-encoding", "identity").strip().lower()
+    if encoding not in ("", "identity"):
+        raise FetchError(f"{response.url}: compressed answer ({encoding}) refused")
+    body = bytearray()
+    try:
+        for chunk in response.iter_raw():
+            body += chunk[: MAX_BYTES - len(body)]
+            if len(body) >= MAX_BYTES:
+                break
+            if time.monotonic() - started > DEADLINE:
+                raise FetchError(f"{response.url}: took longer than {DEADLINE:.0f} s")
+    except httpx.StreamConsumed:  # test responses (mock transport) arrive already read
+        return bytes(response.content[:MAX_BYTES])
+    return bytes(body)
 
 
 def fetch(url: str, client: httpx.Client | None = None, guard=check_url) -> Page:
@@ -89,10 +126,12 @@ def fetch(url: str, client: httpx.Client | None = None, guard=check_url) -> Page
             with client.stream(
                 "GET",
                 current,
-                headers={"User-Agent": USER_AGENT},
+                headers={"User-Agent": USER_AGENT, "Accept-Encoding": "identity"},
                 timeout=TIMEOUT,
                 follow_redirects=False,
             ) as response:
+                if not _peer_is_public(response):
+                    raise FetchError(f"{current}: connected to a non-public address")
                 if response.is_redirect and "location" in response.headers:
                     current = str(response.url.join(response.headers["location"]))
                     continue
