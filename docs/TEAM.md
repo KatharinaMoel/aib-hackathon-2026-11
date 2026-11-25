@@ -24,7 +24,7 @@
 | Time | What | Checkpoint |
 |---|---|---|
 | 15:00–15:10 | Intros: tool, strength, what each of us wants to learn | caller named |
-| 15:10–15:30 | Agreement, roles, picks from `docs/PROPOSALS.md`, commands in `AGENTS.md`, output format, team channel; Norma GitHub App + MCP, **first Norma check** | Norma not working by 15:45 → caller keeps or drops it |
+| 15:10–15:30 | Agreement, roles, picks from `docs/PROPOSALS.md`, commands in `AGENTS.md`, output format, team channel; Norma GitHub App + MCP, link the repo in the Norma workspace, compare `get_rulesets` with the house rules in `AGENTS.md`, **first Norma check → `baseline` row in `DECISIONS.md`**; `tools/labels.sh` | Norma not working by 15:45 → caller keeps or drops it |
 | 15:30–16:15 | First working version: one site → verdict → eval | not running → everyone helps |
 | 16:15–17:30 | Improve in parallel, post the score every 30 min | 17:00: drop any signal that does not raise the score |
 | 17:30–18:15 | ≥ 2 PRs from different authors merged, ≥ 1 Norma finding fixed | 18:15: write `DEFENCE.md` from `DECISIONS.md` |

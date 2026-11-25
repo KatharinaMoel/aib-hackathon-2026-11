@@ -1,0 +1,37 @@
+# One manifest for everyone: `uv sync` installs exactly what uv.lock says (CONTRIBUTING.md, section 1).
+# Add runtime dependencies with `uv add <package>`; never with pip.
+[project]
+name = "agents-with-taste"
+version = "0.1.0"
+description = "Hackathon agent: judges a software product's website, every reason with a checkable link."
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff==0.17.6",  # exact pin: every person and agent formats the same way
+    "pytest>=9",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# E4/E7/E9/F: syntax errors, undefined names, unused imports, bare except
+# BLE: no blind `except Exception` - mirrors Norma rule py-maint-broad-except
+# I: one import order, so diffs from different agents do not fight
+# B: bugbear - mutable defaults, swallowed exceptions
+# T20: no print() - mirrors Norma rule py-maint-no-print; use logging
+# DTZ: timezone-aware datetimes - mirrors py-maint-naive-datetime
+# S113: requests without timeout - mirrors py-scal-requests-no-timeout
+# S102/S307: exec/eval - mirror py-sec-eval-exec
+select = ["E4", "E7", "E9", "F", "BLE", "I", "B", "T20", "DTZ", "S113", "S102", "S307"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]
+"tools/**" = ["T20"]  # command-line scripts print on purpose
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

@@ -1,0 +1,50 @@
+# Same gate for every author: lint, format, tests, and a filled PR description (CONTRIBUTING.md, sections 3 and 8).
+name: pr
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install uv, then exactly the versions in uv.lock
+        run: pip install uv && uv sync --locked
+      - name: Format check (ruff format)
+        run: uv run ruff format --check .
+      - name: Lint (ruff check)
+        run: uv run ruff check .
+      - name: Tests (pytest, no network)
+        run: uv run pytest
+
+  blocks-filled:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Required PR description blocks have text and no "…"
+        env:
+          BODY: ${{ github.event.pull_request.body }}  # via env, never inline in run: (script injection)
+        run: |
+          python3 - <<'PY'
+          import os, re, sys
+          body = os.environ.get("BODY") or ""
+          bad = []
+          for name in ["pr-summary", "pr-issue", "pr-test", "pr-norma", "pr-ai"]:
+              m = re.search(rf"<!-- {name}:start -->(.*?)<!-- {name}:end -->", body, re.S)
+              text = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.S).strip() if m else ""
+              if not text or "…" in text:
+                  bad.append(f"{name}: empty, missing or still contains '…'")
+          if not re.search(r"(?i)\b(closes|fixes|resolves) #\d+", body):
+              bad.append("pr-issue: no 'Closes #n'")
+          for b in bad:
+              print(f"  FAIL  {b}")
+          print(f"{len(bad)} block(s) to fill - see CONTRIBUTING.md, section 3.")
+          sys.exit(1 if bad else 0)
+          PY

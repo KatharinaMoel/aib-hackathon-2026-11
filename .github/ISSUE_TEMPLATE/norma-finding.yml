@@ -1,0 +1,42 @@
+name: Norma finding
+description: One Norma finding the team decides on - fix, accept with a reason, or log as a conflict between authors.
+title: "norma: <rule ID> in <file>"
+labels: ["norma"]
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: Rule ID and severity (as Norma names them)
+      placeholder: "py-scal-requests-no-timeout, MEDIUM"
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: File and line
+      placeholder: "src/fetch.py:31"
+  - type: input
+    id: seen
+    attributes:
+      label: Seen in (PR or live_check, time)
+      placeholder: "#12, GitHub App comment 16:40"
+  - type: dropdown
+    id: decision
+    attributes:
+      label: Decision
+      options:
+        - not decided yet
+        - fix (link the task or PR)
+        - accept (reason below)
+        - conflict between authors (who and what below)
+      default: 0
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason
+      description: "Accept: what a fix would break or cost, and who agreed. Conflict: which two authors or agents, what each did, how we fixed it for everyone."
+  - type: textarea
+    id: decisions-row
+    attributes:
+      label: DECISIONS.md row
+      description: The exact row you added.

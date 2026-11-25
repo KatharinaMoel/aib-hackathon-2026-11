@@ -1,0 +1,25 @@
+# Red until both review views are posted (CONTRIBUTING.md, section 4).
+# It looks for the marker lines only; it does not check that a review is newer than the last push.
+name: review-gate
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, edited]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  two-views:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const reviews = await github.paginate(github.rest.pulls.listReviews,
+              { owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number });
+            const has = v => reviews.some(r => (r.body || '').includes(`<!-- review:${v} -->`));
+            const missing = ['correctness', 'consistency'].filter(v => !has(v));
+            if (missing.length) core.setFailed(`Missing review view: ${missing.join(', ')} - see CONTRIBUTING.md, section 4`);
+            else core.info('Both review views found.');

@@ -1,0 +1,48 @@
+name: Task
+description: One piece of work for one person and their agent. One task = one PR. Done when a command passes.
+title: "task: "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: "Plain English. Paths and commands in backticks. 2 minutes. You can hand this issue to your agent as it is."
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence. What works after this task that does not work now.
+      placeholder: "The fetcher stops after 5 pages per site and caches pages in out/cache/."
+    validations:
+      required: true
+  - type: input
+    id: done-when
+    attributes:
+      label: Done when (command → expected output)
+      placeholder: "`uv run pytest tests/test_fetch.py` → 3 passed"
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Files allowed to change
+      description: One path per line. The agent changes no other file. A shared module needs its owner's OK (AGENTS.md, rule 8).
+      render: text
+  - type: input
+    id: owner
+    attributes:
+      label: Owner
+      description: GitHub handle of the person whose agent does it. Also set Assignees.
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk
+      description: If it touches fetched text, keys, shell or network, the PR gets the label second-opinion.
+      options:
+        - normal
+        - touches fetched text, keys, shell or network
+      default: 0
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (optional)
+      description: Helper to reuse, links, what is out of scope.

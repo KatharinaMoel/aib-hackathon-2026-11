@@ -6,35 +6,9 @@ Cross out what we don't want – that is a fine result too.
 What they aim at: say what you did and what you checked; a reader can follow why; write for the next person
 who opens it; keep it simple.
 
-## 1. Comments in PRs
+## 1.–2. Comments and labels
 
-- Start with one clear sentence. Details after.
-- Put the kind first:
-
-  | Prefix | Meaning | Blocks the merge? |
-  |---|---|---|
-  | `Bug:` | must be fixed before the merge | yes |
-  | `Question:` | only the author can answer | no – but answer it before the merge |
-  | `Note:` | for information | no |
-
-- If an AI wrote the text for you, add "(drafted with <agent>)" at the end.
-
-| Bad | Good |
-|---|---|
-| Three paragraphs of context, then "this could possibly be an issue". | `Bug:` this drops reasons without a URL silently, so the verdict looks better than it is. `src/judge.py:42` |
-| PR description: "Tests: 14 passed. Changed files: a.py, b.py. Docs: N/A." | "Reasons now carry the quote they rely on, so the checker can verify them. Test: `python -m eval --n 5` → 5 verdicts, 0 errors." |
-| An AI reply that reads like the author's own words. | "… (drafted with Claude Code; I checked it against the cached page)" |
-
-## 2. Labels (at most four)
-
-| Label | Means | Set by |
-|---|---|---|
-| `needs-review` | ready; a reviewer is next | author |
-| `author-turn` | changes requested or a question is open | reviewer |
-| `second-opinion` | risky change (keys, fetched text, shared module); one more person reads it | anyone |
-| `blocked` | waits for a decision or answer; the comment says from whom | anyone |
-
-After a fix, the author clicks "Re-request review" on the PR, so the reviewer sees it is their turn.
+Now part of `CONTRIBUTING.md` (sections 4 and 5). Change them there by PR.
 
 ---
 

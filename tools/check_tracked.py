@@ -5,6 +5,7 @@ Paths are read NUL-separated (`-z`), so git does not quote names with spaces or 
 and they cannot slip past the patterns. `--scan` also searches tracked files for token-like strings;
 a file that cannot be read counts as a failure, not as clean.
 """
+
 import re
 import subprocess
 import sys
