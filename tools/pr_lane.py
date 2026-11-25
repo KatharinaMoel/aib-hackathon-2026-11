@@ -20,6 +20,7 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 
 # Files and folders whose change affects every author or agent: they always get two views.
 RULE_FILES = {
@@ -54,14 +55,34 @@ def lane(files, labels):
     return {"lane": name, "blocks": ALL_BLOCKS, "issue": True, "reviews": reviews}
 
 
+TEMPLATE = Path(__file__).parent.parent / ".github" / "pull_request_template.md"
+
+
+def block_text(body, name):
+    """The text of one marker block without its HTML comments; empty string if the block is missing."""
+    m = re.search(rf"<!-- {name}:start -->(.*?)<!-- {name}:end -->", body or "", re.S)
+    return re.sub(r"<!--.*?-->", "", m.group(1), flags=re.S).strip() if m else ""
+
+
+def placeholder_lines(name):
+    """Template lines of a block that still hold the placeholder "…" – left unchanged, they mean "not filled".
+
+    A "…" you write yourself (e.g. an ellipsis in a sentence) is fine; only untouched template lines count.
+    """
+    template = TEMPLATE.read_text(encoding="utf-8") if TEMPLATE.exists() else ""
+    return {line.strip() for line in block_text(template, name).splitlines() if "…" in line}
+
+
 def missing_blocks(body, need, title):
     """List the problems in the PR description and title; empty list = all good."""
     problems = []
     for name in need["blocks"]:
-        m = re.search(rf"<!-- {name}:start -->(.*?)<!-- {name}:end -->", body or "", re.S)
-        text = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.S).strip() if m else ""
-        if not text or "…" in text:
-            problems.append(f"{name}: empty, missing or still contains '…'")
+        text = block_text(body, name)
+        left = placeholder_lines(name) & {line.strip() for line in text.splitlines()}
+        if not text or left:
+            problems.append(
+                f"{name}: empty, missing or still has a template line: {sorted(left)[:1]}"
+            )
     if need["issue"] and not re.search(r"(?i)\b(closes|fixes|resolves) #\d+", body or ""):
         problems.append("pr-issue: no 'Closes #n'")
     if not TITLE.match(title or ""):

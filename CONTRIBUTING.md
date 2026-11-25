@@ -57,7 +57,7 @@ counts, open work does not. Reviewing first keeps everyone's PRs moving (pattern
 - **Write what the diff cannot show.** No list of changed files, no test counts.
 - **Required blocks:** fast lane: only `pr-summary`. Standard and two-views: `pr-summary`, `pr-issue`,
   `pr-test`, `pr-norma`, `pr-ai`. CI job `pr / blocks-filled` fails while one of them is empty or still
-  contains `…`, or while the title does not read `<type>: <summary>`.
+  has an untouched template line with `…`, or while the title does not read `<type>: <summary>`.
 - **"I ran" vs. "I only read".** In `pr-ai`, keep the two apart. A claim you did not run goes under "only read".
 
 ## 4. Review: lanes

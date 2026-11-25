@@ -4,7 +4,7 @@ Write only what the diff and the checks cannot show: no list of changed files, n
 If a block does not apply, delete its text and keep its markers.
 Title: "<type>: <summary>", type feat/fix/docs/test/chore/refactor (it becomes the commit on main).
 FAST LANE – only Markdown files, none of them AGENTS.md, CONTRIBUTING.md or CLAUDE.md: fill pr-summary only, delete the rest.
-Every other PR: CI (pr / blocks-filled) fails while pr-summary, pr-issue, pr-test, pr-norma or pr-ai is empty or still contains "…".
+Every other PR: CI (pr / blocks-filled) fails while pr-summary, pr-issue, pr-test, pr-norma or pr-ai is empty or still has an untouched template line with "…".
 Lanes and reviews: CONTRIBUTING.md, section 4. -->
 
 <!-- pr-summary:start -->

@@ -28,7 +28,7 @@ def fake_fetcher(url: str) -> Page:
     client = httpx.Client(
         transport=httpx.MockTransport(lambda request: httpx.Response(200, text=HTML))
     )
-    return fetch(url, client=client)
+    return fetch(url, client=client, guard=lambda checked: None)
 
 
 def test_html_to_text_drops_scripts_styles_and_comments():
@@ -87,3 +87,32 @@ def test_llm_judge_reason_with_unknown_fact_id_is_dropped():
     verdict = pipeline.run(URL, fetcher=fake_fetcher, judge=llm_judge(lambda prompt: answer))
     jsonschema.validate(verdict, SCHEMA)
     assert [r["fact_id"] for r in verdict["reasons"]] == ["F1"]
+
+
+def test_redirect_to_a_private_address_is_refused():
+    def handler(request):
+        if request.url.host == "acme-crm.example":
+            return httpx.Response(302, headers={"location": "http://127.0.0.1/admin"})
+        return httpx.Response(200, text="internal")
+
+    def guard(url):
+        if "127.0.0.1" in url:
+            raise FetchError("non-public address")
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    try:
+        fetch(URL, client=client, guard=guard)
+    except FetchError as err:
+        assert "non-public" in str(err)
+    else:
+        raise AssertionError("redirect to a private address was followed")
+
+
+def test_ipv4_mapped_private_address_is_not_public():
+    import ipaddress
+
+    from taste.fetch import _not_public
+
+    assert _not_public(ipaddress.ip_address("::ffff:127.0.0.1"))
+    assert _not_public(ipaddress.ip_address("10.0.0.1"))
+    assert not _not_public(ipaddress.ip_address("93.184.215.14"))

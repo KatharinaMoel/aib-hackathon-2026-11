@@ -69,3 +69,11 @@ def test_quick_lane_needs_view_a_and_three_blocks():
     assert need["lane"] == "quick"
     assert need["reviews"] == ["correctness"]
     assert need["blocks"] == ["pr-summary", "pr-test", "pr-norma"]
+
+
+def test_own_ellipsis_is_fine_but_template_placeholder_is_not():
+    need = pr_lane.lane(["src/fetch.py"], [])
+    own = FILLED.replace("text", "Could not check: … non-public address", 1)
+    assert pr_lane.missing_blocks(own, need, "feat: x") == []
+    untouched = FILLED.replace("text", "…", 1)  # pr-summary still holds the template's "…" line
+    assert pr_lane.missing_blocks(untouched, need, "feat: x") != []
