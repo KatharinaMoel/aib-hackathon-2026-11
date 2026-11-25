@@ -28,7 +28,10 @@ class FetchError(Exception):
 
 
 GLOBAL_V6 = ipaddress.ip_network("2000::/3")  # the only IPv6 range used on the public internet
-NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+NAT64 = ipaddress.ip_network(
+    "64:ff9b::/96"
+)  # well-known prefix: the IPv4 address is the last 32 bits
+LOCAL_NAT64 = ipaddress.ip_network("64:ff9b:1::/48")  # site-specific layout: refused, not decoded
 
 
 def _not_public(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
@@ -38,7 +41,9 @@ def _not_public(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
     """
     if isinstance(ip, ipaddress.IPv6Address):
         embedded = ip.ipv4_mapped or ip.sixtofour or (ip.teredo[1] if ip.teredo else None)
-        if embedded is None and any(ip in net for net in NAT64):
+        if ip in LOCAL_NAT64:
+            return True
+        if embedded is None and ip in NAT64:
             embedded = ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
         if embedded is not None:
             ip = embedded
@@ -59,7 +64,9 @@ def check_url(url: str) -> None:
     """Refuse URLs that could reach our own machine or network: only public http(s) hosts.
 
     DNS can change between this check and the connection ("DNS rebinding"), so `fetch` checks the address it
-    actually connected to again before it reads the page.
+    actually connected to again before it reads the page. Accepted limit: the GET request itself is already
+    sent by then; only its answer is never read. Closing this fully needs a transport that connects to the
+    checked IP – too much for a one-day agent whose URLs come from the organisers (decision 25 Nov 2026).
     """
     parts = urlparse(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
