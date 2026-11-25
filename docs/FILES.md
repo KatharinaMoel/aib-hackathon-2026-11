@@ -26,8 +26,8 @@ decided and what the team decides at 15:10, a 5-minute talk outline and a one-pa
 - **Read by:** everyone at the start; the owner for the intro talk.
 - **Change:** by PR (fast lane) when a decision changes.
 
-**`docs/RESEARCH.md`** and **`docs/research/1–3`** – what published research says about spotting fake sites,
-turned into 10 rules for our agent; the three files hold the full reviews with page numbers and source links.
+**`docs/RESEARCH.md`** and **`docs/research/1–4`** – what published research says about spotting fake sites,
+turned into 11 rules for our agent; the four files hold the full reviews with page numbers and source links.
 - **Why:** gives the judge rules and signals a basis beyond our own guesses.
 - **Read by:** the people working on signals and the judge; coding agents writing the judge prompt.
 - **Change:** add a source only after opening it; mark anything else "not verified".

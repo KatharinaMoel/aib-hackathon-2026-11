@@ -33,8 +33,8 @@ docs/TEAM.md         – agreement, roles, timebox for the day, submission check
 docs/SIGNALS.md      – signals the agent can check, free sources, pitfalls, rules for the judge
 docs/STARTER_ISSUES.md – ten first tasks to claim, and the order they merge in
 docs/INTRO.md        – how the repo came about, principles, what is decided, cheat sheet
-docs/RESEARCH.md     – what research says about spotting fake sites: 10 rules with sources
-docs/research/       – the three full literature reviews behind RESEARCH.md
+docs/RESEARCH.md     – what research says about spotting fake sites: 11 rules with sources
+docs/research/       – the four full literature reviews behind RESEARCH.md
 docs/PROPOSALS.md    – optional practices; only what the team picks becomes a rule
 docs/FILES.md        – what every file is for, who reads it, how to change it
 src/                 – the agent: fetch → judge → verify (built on the day)

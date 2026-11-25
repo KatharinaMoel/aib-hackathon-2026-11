@@ -46,6 +46,7 @@ Rate limits and terms of use: not verified. Be a polite visitor (brief, p. 3): c
 | Looks | generated-site tells | grep for chatbot phrases, `[Your Name]`-style placeholders, lorem ipsum | NewsGuard 2023 |
 | Substance | contact domain can receive mail | DNS MX lookup, no email sent | NewsGuard 2023: 8 of 27 invalid |
 | Risk | security contact | `/.well-known/security.txt`, `/security` page | CISA Secure by Demand |
+| Looks | provably fake urgency or activity | load the page twice: a countdown that resets, a "N people viewing" number that changes randomly | Mathur et al. 2019 – the pattern alone is weak, only a proven fake counts |
 
 ## Rules for every signal module
 

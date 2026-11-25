@@ -1,13 +1,13 @@
 # What research says about spotting fake sites
 
 <!-- One-page summary of three literature reviews (25 Nov 2026), turned into rules for our agent.
-Details, all numbers with page/section, and every source link: docs/research/1–3. See docs/FILES.md. -->
+Details, all numbers with page/section, and every source link: docs/research/1–4. See docs/FILES.md. -->
 
 **Read this with one caveat:** the studies looked at fake online shops, phishing, news and health sites –
 not at B2B software vendors. Using them for vendors is our own inference. Every source below was opened and
 checked by a research agent on 25 Nov 2026; a sample of five was re-checked against arXiv and Crossref.
 
-## The 10 rules we take from it
+## The 11 rules we take from it
 
 | # | Rule for our agent | Evidence (short) | Source |
 |---|---|---|---|
@@ -21,6 +21,7 @@ checked by a research agent on 25 Nov 2026; a sample of five was re-checked agai
 | 8 | **Never use an AI-text detector score as evidence.** | Detectors flagged non-native essays as AI at 61 % on average; none of 14 tools reached 80 % accuracy; OpenAI withdrew its own classifier. A score also has no link to check. | Liang et al. 2023; Weber-Wulff et al. 2023 |
 | 9 | **"Not blocklisted" means nothing.** | Google Safe Browsing caught 0.46 % of fraud shops. | Beyond Phish (S&P 2023) |
 | 10 | **Don't doubt everything.** Commit to a call when the evidence supports it; one past incident (breach, outage) does not cancel a solid record; missing certificates or a low turnover alone never make a vendor hollow. | "Our problem is not gullibility, but rather the gullibility of cynics"; UK procurement guidance: never exclude a supplier on financial data alone. | Caulfield 2018; UK EFS guidance 2026; ENISA 2023 |
+| 11 | **Persuasion tricks are weak evidence – unless they are provably fake.** Urgency, scarcity and social proof ("offer ends tonight", "12 people viewing") are common on legitimate sites too. Count only a trick we can show is fake: a countdown that resets on reload, a "just bought" pop-up from a random number or fixed list. Even then it proves dishonest marketing, not a fake product. | Dark patterns on 11.1 % of ~11K shopping sites, more on popular ones; 157 timers that reset or ran past their deadline, 29 fake activity pop-ups (Mathur et al., CSCW 2019). EU sweep 2023: 148 of 399 shops had at least one. A leading fraud-site detector uses no persuasion cues at all. | Mathur et al. 2019; Di Geronimo et al. 2020; Beyond Phish 2023 → [4-persuasion](research/4-persuasion.md) |
 
 ## How this changes our plan
 
@@ -43,3 +44,4 @@ measured them. Use them only as weak hints, and say so.
 | Fraudulent websites | Adam Doupé (Arizona State Univ.), Tyler Moore (Univ. of Tulsa), Lieven Desmet's group (KU Leuven) | [research/1-fraud-sites.md](research/1-fraud-sites.md) |
 | How people and experts judge credibility | B.J. Fogg (Stanford Web Credibility Project), Sam Wineburg & Sarah McGrew (Stanford, now Digital Inquiry Group), Mike Caulfield (SIFT) | [research/2-credibility.md](research/2-credibility.md) |
 | AI-generated sites, vendor checks | Liang/Zou (Stanford), Weber-Wulff et al., NewsGuard, Hanley & Durumeric; CISA, ENISA, UK Government | [research/3-ai-and-vendors.md](research/3-ai-and-vendors.md) |
+| Persuasion tricks and dark patterns | Arunesh Mathur et al. (Princeton), Di Geronimo et al., Luguri & Strahilevitz; EU consumer authorities | [research/4-persuasion.md](research/4-persuasion.md) |

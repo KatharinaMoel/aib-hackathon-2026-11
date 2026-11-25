@@ -28,7 +28,7 @@ rules, the checks and the research.
 | Expert reviews (agents) | senior/OSS developer, project manager, eval engineer, hackathon juror, security; later Python maintainer, GitHub admin, Norma analyst, technical writer | `AGENTS.md`, `CONTRIBUTING.md`, PR template, CI, `docs/FILES.md` |
 | Compare with 6 open-source agent repos | OpenHands, crewAI, smolagents, browser-use, gpt-researcher, deer-flow – what their contribution rules, agent files and evals do | claim rule, accountability line in PRs, rules 11–13, fact IDs in the schema |
 | Stress test under time pressure | the day simulated in 15-minute steps with 4 people | lanes incl. `hotfix`, "review first while you wait", starter issues #9–10, fallbacks, emergency mode |
-| Literature | fake-shop detection, how fact-checkers judge credibility, AI-generated sites, vendor due diligence | `docs/RESEARCH.md` (10 rules), new signals in `docs/SIGNALS.md` |
+| Literature | fake-shop detection, how fact-checkers judge credibility, AI-generated sites, vendor due diligence, persuasion tricks and dark patterns | `docs/RESEARCH.md` (11 rules), new signals in `docs/SIGNALS.md` |
 | Tested free data sources | RDAP, Wayback, crt.sh, Have I Been Pwned – each answered without a key | `docs/SIGNALS.md` |
 
 ## 3. What is decided, what we decide at 15:10
@@ -53,7 +53,7 @@ day (not stated in the briefs – that is why there is none).
 2. How we win: calls first, then evidence; both mistakes count (README, "Our goal") – 30 s.
 3. Principles 1–3 above – 1 min.
 4. How a change gets merged: issue → branch → PR blocks → review for the lane → merge by someone else – 1 min.
-5. Research in one line: "Leave the site first; looks are weak; self-description is neutral" (`docs/RESEARCH.md`) – 30 s.
+5. Research in one line: "Leave the site first; looks are weak; self-description is neutral; pressure tricks count only when provably fake" (`docs/RESEARCH.md`) – 30 s.
 6. Roles and starter issues: everyone claims one – 1 min.
 7. Questions – 30 s.
 
