@@ -42,7 +42,8 @@ else:
     report(False, "origin/main not found – run `git fetch origin`; steps 2 and 4 not checked")
 
 print("3/4 No private files tracked (data/, out/, results/, .env, *.labels.*) – event data stays inside the event.")
-private = [p for p in git("ls-files").stdout.splitlines() if any(re.search(r, p) for r in PRIVATE)]
+tracked = [p for p in git("ls-files", "-z").stdout.split("\0") if p]  # -z: no quoting of special names
+private = [p for p in tracked if any(re.search(r, p) for r in PRIVATE)]
 report(not private, "private paths: " + (", ".join(private) if private else "none"), hard=True)
 
 print("4/4 No token-like strings in committed and staged changes since origin/main – keys belong in .env.")

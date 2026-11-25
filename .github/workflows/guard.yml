@@ -8,4 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: No private paths or token-like strings tracked
-        run: git ls-files | python3 tools/check_tracked.py --scan
+        run: git ls-files -z | python3 tools/check_tracked.py --scan
