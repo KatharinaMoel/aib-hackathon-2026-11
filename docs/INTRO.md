@@ -27,37 +27,28 @@ rules, the checks and the research.
 | Choose the challenge | Stackgini: the only one with an objective score (labelled examples, same live cases for everyone); Norma stacks on top ("any project you submit with a GitHub link can enter", Norma brief p. 1) | `README.md`, "How Stackgini and Norma fit together" |
 | Expert reviews (agents) | senior/OSS developer, project manager, eval engineer, hackathon juror, security; later Python maintainer, GitHub admin, Norma analyst, technical writer | `AGENTS.md`, `CONTRIBUTING.md`, PR template, CI, `docs/FILES.md` |
 | Compare with 6 open-source agent repos | OpenHands, crewAI, smolagents, browser-use, gpt-researcher, deer-flow – what their contribution rules, agent files and evals do | claim rule, accountability line in PRs, rules 11–13, fact IDs in the schema |
-| Stress test under time pressure | the day simulated in 15-minute steps with 4 people | lanes incl. `hotfix`, "review first while you wait", starter issues #9–10, fallbacks, emergency mode |
+| Stress test under time pressure | the day simulated in 15-minute steps with 4 people | lanes incl. `quick`, "review first while you wait", starter issues #9–10, fallbacks, emergency mode |
 | Literature | fake-shop detection, how fact-checkers judge credibility, AI-generated sites, vendor due diligence, persuasion tricks and dark patterns | `docs/RESEARCH.md` (11 rules), new signals in `docs/SIGNALS.md` |
 | Tested free data sources | RDAP, Wayback, crt.sh, Have I Been Pwned – each answered without a key | `docs/SIGNALS.md` |
 
-## 3. What is decided, what we decide at 15:10
+## 3. What is prepared, what we decide together at the start
 
-**Already in place (change any of it by PR):** uv + ruff + pytest; CI checks (`guard`, `pr`, `review-gate`);
+**Prepared – a proposal, change any of it:** uv + ruff + pytest; CI checks (`guard`, `pr`, `review-gate`);
 PR template in blocks; issue forms; 4 labels; lanes; house rules that mirror Norma rule IDs; Norma MCP config
 and check-and-fix skill; draft verdict schema; signal list; judge rules; eval protocol; 10 starter issues.
 
-**We decide together at 15:10:**
-- who is caller, pipeline, judgement, eval, Norma/video (`docs/TEAM.md`, roles);
+**We decide together at the start:**
+- what we keep, change or drop from this proposal – after everyone has read the task details;
+- who is caller, pipeline, judgement, eval, Norma/video (`docs/TEAM.md`, roles), and 2–3 maintainers;
 - package name and run command (starter issue #1);
 - model and search API (Tavily is offered by the organisers);
 - verdict values once Stackgini's labels are known (`schema/verdict.schema.json` is a draft);
-- which proposals from `docs/PROPOSALS.md` we keep – and anything in this repo we want to drop.
+- which proposals from `docs/PROPOSALS.md` we keep.
 
 **Still open:** Stackgini's labelled examples (not received by 25 Nov); whether code may be written before the
 day (not stated in the briefs – that is why there is none).
 
-## 4. Talk outline (5 minutes at 15:00)
-
-1. The task in one sentence (README, "The task in one paragraph") – 30 s.
-2. How we win: calls first, then evidence; both mistakes count (README, "Our goal") – 30 s.
-3. Principles 1–3 above – 1 min.
-4. How a change gets merged: issue → branch → PR blocks → review for the lane → merge by someone else – 1 min.
-5. Research in one line: "Leave the site first; looks are weak; self-description is neutral; pressure tricks count only when provably fake" (`docs/RESEARCH.md`) – 30 s.
-6. Roles and starter issues: everyone claims one – 1 min.
-7. Questions – 30 s.
-
-## 5. Cheat sheet
+## 4. Cheat sheet
 
 **Setup (once):** `uv sync` · `cp .env.example .env` (add keys) · `tools/check` → `0 must fix`
 
@@ -73,16 +64,17 @@ day (not stated in the briefs – that is why there is none).
 | While waiting | review someone else's PR, then start the next issue |
 
 **Lanes:** fast (only non-rule `.md`) → summary only · standard (code) → all blocks + review A by a person ·
-two-views (label `norma`/`second-opinion`, or rules/CI/tools/schema) → + review B · hotfix (emergency mode,
-from 18:15) → three blocks + review A at the table.
+two-views (label `norma`/`second-opinion`, or rules/CI/tools/schema) → + review B · quick (until the skeleton is merged,
+and in emergency mode) → three blocks + review A at the table.
 
 **Comments:** `Bug:` blocks · `Question:` answer it, does not block · `Note:` information.
 
 **Never:** keys or event data in git or chat · agents merging · deleting code to hide a Norma finding ·
 researching the live products by hand · tests that call an LLM or the network.
 
-**Key times:** 16:15 two PRs from different authors merged · 17:00 pipeline wired (#9) · 17:30 Norma sweep 1 ·
-18:15 DEFENCE + emergency mode · 18:45 freeze · 19:00 blind cases · 19:40 verdict file sent.
+**Checkpoints** (`docs/TEAM.md`): 16:00 walking skeleton merged · 16:15 two code PRs from different authors ·
+17:30 Norma sweep 1 + video script · 18:15 DEFENCE + emergency mode · 18:30 rehearsal · 18:45 freeze ·
+19:00 blind cases · 19:40 verdict file sent.
 
 **Where to look:** task → `README.md` · rules → `AGENTS.md` · how to merge → `CONTRIBUTING.md` · plan →
 `docs/TEAM.md` · what to check → `docs/SIGNALS.md` · why → `docs/RESEARCH.md` · any file → `docs/FILES.md`.

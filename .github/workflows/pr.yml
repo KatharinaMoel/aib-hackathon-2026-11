@@ -28,7 +28,7 @@ jobs:
         run: uv run pytest
 
   blocks-filled:
-    # Checks the PR title and the required template blocks for this PR's lane (fast / standard / two-views / hotfix).
+    # Checks the PR title and the required template blocks for this PR's lane (fast / standard / two-views / quick).
     # The lane rules live in tools/pr_lane.py, so this job and review-gate use the same rules.
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest

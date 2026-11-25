@@ -1,6 +1,6 @@
 # Proposals – a menu, not rules
 
-These practices worked for me (Katharina) in longer projects. We use one only if the team agrees at 15:10.
+These practices worked for me (Katharina) in longer projects. We use one only if the team agrees at the start.
 Cross out what we don't want – that is a fine result too.
 
 What they aim at: say what you did and what you checked; a reader can follow why; write for the next person

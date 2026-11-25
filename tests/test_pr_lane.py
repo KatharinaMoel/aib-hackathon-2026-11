@@ -64,8 +64,8 @@ def test_view_b_may_come_from_the_authors_account():
     assert pr_lane.missing_reviews(reviews, need, "kat") == []
 
 
-def test_hotfix_needs_view_a_and_three_blocks():
-    need = pr_lane.lane(["src/fetch.py", "AGENTS.md"], ["hotfix"])
-    assert need["lane"] == "hotfix"
+def test_quick_lane_needs_view_a_and_three_blocks():
+    need = pr_lane.lane(["src/fetch.py", "AGENTS.md"], ["quick"])
+    assert need["lane"] == "quick"
     assert need["reviews"] == ["correctness"]
     assert need["blocks"] == ["pr-summary", "pr-test", "pr-norma"]

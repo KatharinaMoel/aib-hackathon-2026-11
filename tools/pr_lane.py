@@ -7,7 +7,8 @@ Lanes, so small PRs stay fast and risky PRs get a second look:
 - standard:  everything else -> all required blocks, "Closes #n", review A (correctness/security).
 - two-views: label `norma` or `second-opinion`, or a change to rules, CI, agent config, tools or schema
              -> standard plus review B (consistency/Norma).
-- hotfix:    label `hotfix`, emergency mode only (docs/TEAM.md) -> pr-summary, pr-test, pr-norma, review A.
+- quick:     label `quick`, only until the skeleton (#1) is merged and in emergency mode (docs/TEAM.md)
+             -> pr-summary, pr-test, pr-norma, review A (may be given at the table).
 
 Used by CI (.github/workflows/pr.yml and review-gate.yml) and by tests/test_pr_lane.py. Run by hand:
   FILES="README.md" LABELS="" BODY="..." TITLE="docs: ..." python3 tools/pr_lane.py blocks
@@ -42,11 +43,10 @@ def lane(files, labels):
     rule_change = any(f in RULE_FILES or f.startswith(RULE_DIRS) for f in files)
     if files and all(f.endswith(".md") for f in files) and not rule_change:
         return {"lane": "fast", "blocks": ["pr-summary"], "issue": False, "reviews": []}
-    if (
-        "hotfix" in labels
-    ):  # emergency mode (docs/TEAM.md): fewer blocks, view A only, no issue needed
+    # quick: skeleton phase and emergency mode (docs/TEAM.md) - fewer blocks, view A only, no issue needed.
+    if "quick" in labels:
         blocks = ["pr-summary", "pr-test", "pr-norma"]
-        return {"lane": "hotfix", "blocks": blocks, "issue": False, "reviews": ["correctness"]}
+        return {"lane": "quick", "blocks": blocks, "issue": False, "reviews": ["correctness"]}
     reviews = ["correctness"]
     if rule_change or RISK_LABELS & set(labels):
         reviews.append("consistency")

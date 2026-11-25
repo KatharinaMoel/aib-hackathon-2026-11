@@ -12,10 +12,10 @@ code: Norma by Quality Clouds ([brief](https://aiagentsberlin.xyz/ah3-brief-norm
 > examples and a scoring script to registered builders (the brief says "on Nov 23"; not received by us yet).
 > When they arrive, we update "What we don't know yet".
 
-**New here? 5 minutes:**
-0. `docs/INTRO.md`: how this repo came about, what is decided, and a one-page cheat sheet.
+**New here? Read only `docs/INTRO.md`** (5 minutes): how this repo came about, what is decided, and a one-page
+cheat sheet. Everything else is reference – open it when you need it:
 1. This README up to "Good and bad reasons" (2 min).
-2. `docs/TEAM.md`: agreement and timebox (1 min).
+2. `docs/TEAM.md`: agreement, roles, checkpoints.
 3. `AGENTS.md`: rules 1–13 (2 min). `CONTRIBUTING.md`: how a change gets merged.
 4. `docs/FILES.md` when you ask "what is this file for?": one entry per file.
 
@@ -28,8 +28,7 @@ CLAUDE.md            – one line that makes Claude Code load AGENTS.md
 CONTRIBUTING.md      – how a change gets merged: claim rule, PR blocks, lanes, reviews, labels, Norma loop
 DECISIONS.md         – log of decisions and Norma findings (filled from pr-norma blocks at 17:30)
 DEFENCE.md           – Norma submission: fixed / accepted / conflict, written at 18:15
-CODEOWNERS           – who reviews changes to rules, agent config and CI
-docs/TEAM.md         – agreement, roles, timebox for the day, submission checklist
+docs/TEAM.md         – agreement, roles, checkpoints, fallbacks, emergency mode, submission checklist
 docs/SIGNALS.md      – signals the agent can check, free sources, pitfalls, rules for the judge
 docs/STARTER_ISSUES.md – ten first tasks to claim, and the order they merge in
 docs/INTRO.md        – how the repo came about, principles, what is decided, cheat sheet
@@ -44,7 +43,7 @@ tests/               – pytest, no network; fixtures/ holds hand-written pages 
 tools/check          – run before every PR; must end "0 must fix"
 tools/pr_lane.py     – decides a PR's lane and what it needs; used by CI
 tools/check_tracked.py – private-file and token check, used by CI
-tools/labels.sh      – creates the four labels once (incl. `hotfix`)
+tools/labels.sh      – creates the four labels once (incl. `quick`)
 pyproject.toml, uv.lock, .python-version – dependencies, exact versions, Python 3.12
 .env.example         – names of the keys; copy to .env (never committed)
 .gitignore           – keys, event data and caches git must never pick up
@@ -108,16 +107,18 @@ Ask Stackgini at the kickoff (14:00) if the material has not arrived by then.
    `caution` / `hollow` / `unclear` until we see Stackgini's labels.) We try to bring both down, not only one.
 2. **No reason without a source we fetched.** A reason counts only if our pipeline fetched the URL and the quoted
    text is on that page (`AGENTS.md`, rule 2). Better three checked reasons than ten guesses.
-3. **Say when we are unsure.** If the evidence is thin, the verdict says so and names what is missing. (Our
-   proposal; whether the format allows an "unsure" value: not known yet.)
+3. **Always make a call, and say how strong it is.** "An agent that doubts everything" fails too (brief, p. 1).
+   Thin evidence shows in `evidence_strength` and the `not_checked` list, not in refusing a call.
 4. **Runs on a new product in minutes**, without a person looking anything up.
 
 ## How evidence is weighed
 
 1. Independent sources (company register, customers' own sites, press the vendor didn't write, web archive) –
    count as evidence.
-2. The vendor's own site – counts only for how the site looks (copyright year, dead links), not for claims about
-   customers or features.
+2. The vendor's own site – counts for how the site looks (copyright year, dead links) and for whether the
+   product exists and ships: features documented in the docs, dates in the changelog or on the status page
+   ("claims that check out in the docs", brief p. 2). It never counts for claims about customers, awards, size or
+   age – those need an outside source.
 3. Search snippets and model knowledge – never count as evidence. They may suggest where to look.
 
 ## Good and bad reasons
@@ -153,7 +154,7 @@ git clone git@github.com:KatharinaMoel/aib-hackathon-2026-11.git && cd aib-hacka
 uv sync                # needs uv: https://docs.astral.sh/uv/getting-started/installation/
 cp .env.example .env   # add your keys
 tools/check            # must end with "0 must fix"
-uv run --env-file .env <run command> https://acme-crm.example   # set by 15:30, see AGENTS.md "Stack and commands"
+uv run --env-file .env <run command> https://acme-crm.example   # set by starter issue #1, see AGENTS.md "Stack and commands"
 ```
 
 ## For the submission (fill in at 18:15)

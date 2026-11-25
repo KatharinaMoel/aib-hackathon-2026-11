@@ -19,7 +19,7 @@ TYPES = ("feat", "fix", "docs", "test", "chore", "refactor")  # same list as AGE
 COMMIT = re.compile(rf"^({'|'.join(TYPES)}): .+")
 # Private paths, same list as tools/check_tracked.py and .gitignore. The .env pattern matches .env
 # and .env.<anything> in any folder, but not .env.example ("(?!example$)": skip if the rest is "example").
-PRIVATE = [r"^data/", r"^out/", r"^results/", r"(^|/)\.env($|\.)(?!example$)", r"\.labels\."]
+PRIVATE = [r"^data/", r"^out/", r"^results/", r"^local/", r"(^|/)\.env($|\.)(?!example$)", r"\.labels\."]
 # Key-like strings: sk-... (OpenAI-style model keys), ghp_... (GitHub tokens), tvly-... (Tavily keys).
 # The minimum lengths keep short words like "sk-learn" from matching.
 TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{30,}|tvly-[A-Za-z0-9]{20,})")

@@ -15,3 +15,6 @@ results/
 __pycache__/
 .venv/
 node_modules/
+
+# facilitator's own notes and print-outs (minute plan, talk notes) – never in the repo
+local/

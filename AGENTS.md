@@ -5,7 +5,8 @@ The one rule file for every coding agent and every person on this team.
 ([agents.md](https://agents.md)). Please keep personal rule files such as `CLAUDE.local.md` out of the repo, so
 all agents follow the same rules.
 
-To change a rule, open a PR. Katharina reviews it (see `CODEOWNERS`), because agent rules affect everyone's agent.
+To change a rule, open a PR. A maintainer who is not the author reviews it (`CONTRIBUTING.md`, "Maintainers"),
+because agent rules affect everyone's agent.
 
 ## Rules we start with (change any of them by PR)
 
@@ -53,7 +54,7 @@ To change a rule, open a PR. Katharina reviews it (see `CODEOWNERS`), because ag
 
 They mirror Norma rules for Python, so every author writes the same way before Norma has to say it. Rule IDs from
 Quality Clouds' public catalog ([ruleset.md](https://github.com/qualityclouds/state-of-ai-code-2026/blob/main/docs/ruleset.md));
-whether our Norma workspace uses exactly this catalog: not verified – compare with `get_rulesets` at 15:10.
+whether our Norma workspace uses exactly this catalog: not verified – compare with `get_rulesets` at the start.
 
 | Rule | Do | Norma rule | Checked by |
 |---|---|---|---|
@@ -69,17 +70,17 @@ A new house rule comes from a conflict between authors: log it in `DECISIONS.md`
 
 ## Stack and commands
 
-Python 3.12, [uv](https://docs.astral.sh/uv/), ruff, pytest. Model, search API and package layout: we decide by
-15:30 and fill in the open rows.
+Python 3.12, [uv](https://docs.astral.sh/uv/), ruff, pytest. Model, search API and package layout: we decide at
+the start and fill in the open rows.
 
 | What | Command |
 |---|---|
 | Install | `uv sync` |
 | Add a dependency | `uv add <package>` (never pip; commit `pyproject.toml` and `uv.lock`) |
 | Run anything that needs keys | `uv run --env-file .env <command>` – loads `.env` (keys) into the environment; no `python-dotenv` needed |
-| Run on one URL | `…` (15:30) |
-| Run on a list (blind cases) | `…` (15:30) |
-| Eval on the labelled set | `…` (15:30) |
+| Run on one URL | `…` (set by starter issue #1) |
+| Run on a list (blind cases) | `…` (set by starter issue #1) |
+| Eval on the labelled set | `…` (set by starter issue #1) |
 | Format + lint + tests | `uv run ruff format && uv run ruff check && uv run pytest` |
 | Before every PR | `tools/check` (runs all of the above and the private-file check) |
 
@@ -104,14 +105,14 @@ Tell the team before you change the schema.
 | `eval/` | runs the agent on `data/labelled/` and calls Stackgini's scoring script |
 | `schema/` | verdict output contract |
 | `tools/check` | run before every PR: branch, commits, private files, token-like strings, ruff, pytest |
-| `tools/labels.sh` | creates the four labels once (incl. `hotfix`) |
-| `tools/pr_lane.py` | decides a PR's lane (fast / standard / two-views / hotfix) and checks title, blocks and reviews; used by CI |
+| `tools/labels.sh` | creates the four labels once (incl. `quick`) |
+| `tools/pr_lane.py` | decides a PR's lane (fast / standard / two-views / quick) and checks title, blocks and reviews; used by CI |
 | `tools/check_tracked.py` | the same private-file check, run by CI |
 | `DECISIONS.md` | running log of findings and decisions; `DEFENCE.md` is written from it at 18:15 |
 | `DEFENCE.md` | Norma submission |
-| `docs/TEAM.md` | agreement, roles, timebox, submission checklist |
+| `docs/TEAM.md` | agreement, roles, checkpoints, fallbacks, skeleton phase and emergency mode, submission checklist |
 | `docs/SIGNALS.md` | what the agent can check and where; free sources tested; MVP signals |
-| `docs/PROPOSALS.md` | optional practices we may pick at 15:10 |
+| `docs/PROPOSALS.md` | optional practices we may pick at the start |
 | `data/`, `out/`, `results/` | private, git-ignored |
 
 ## Git flow

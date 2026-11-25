@@ -5,7 +5,7 @@
   "required": ["product_url", "call", "reasons", "not_checked", "evidence_strength", "run_id"],
   "properties": {
     "product_url": {"type": "string"},
-    "call": {"enum": ["trust", "caution", "hollow", "unclear"], "description": "if Stackgini's labels have no 'unclear', always make a call and use evidence_strength instead"},
+    "call": {"enum": ["trust", "caution", "hollow", "unclear"], "description": "always make a call; unclear only when nothing could be fetched or the run crashed. Map to Stackgini's labels at the kickoff"},
     "alive_product": {"type": ["boolean", "null"]},
     "trust_company": {"type": ["boolean", "null"]},
     "evidence_strength": {"enum": ["strong", "thin"], "description": "set by code: strong = at least two verified facts of different kinds"},
@@ -31,14 +31,14 @@
             "required": ["method", "value"],
             "properties": {"method": {"type": "string"}, "value": {}}
           },
-          "tier": {"enum": ["independent", "vendor_self"], "description": "vendor_self counts only for looks"},
+          "tier": {"enum": ["independent", "vendor_self"], "description": "vendor_self counts for looks and for whether the product exists and ships (docs, changelog, status page); never for claims about customers, awards, size or age"},
           "verification": {
             "type": "object",
             "additionalProperties": false,
             "required": ["status"],
             "description": "set by code; a reason without exact or normalized match is dropped",
             "properties": {
-              "status": {"enum": ["exact", "normalized", "measured"]},
+              "status": {"enum": ["exact", "normalized", "measured"], "description": "measured = a number we measured, incl. searches that found nothing"},
               "content_sha256": {"type": "string"}
             }
           }

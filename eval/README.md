@@ -8,15 +8,18 @@ Empty on purpose: built on the day.
 
 ## Protocol (draft)
 
-1. **Before any tuning**, put about 30 % of the labelled products aside as a hold-out, split evenly by label.
-   Write the split to `data/holdout.txt`. Run the hold-out at most twice, the last time around 18:00.
-2. Tune only on the other 70 %. Every prompt change names a **signal**, never a product.
-3. Report two numbers separately: **hollow called solid** and **solid called hollow**. We try to bring both
+1. **Read Stackgini's reasons first.** They show how the judges think. Put a few labelled examples, with their
+   reasons, into the judge prompt as examples.
+2. **Hold-out depends on the size.** 20 or more labelled products: before any tuning, put about 30 % aside,
+   split evenly by label (`data/holdout.txt`), run it at most twice. Fewer than 20: use all of them as examples
+   and as a regression check – a change must not add a new mistake.
+3. Every prompt change names a **signal**, never a product.
+4. Report two numbers separately: **hollow called solid** and **solid called hollow**. We try to bring both
    down, not only one (README, "Our goal").
-4. Also report: share of `evidence_strength: thin` verdicts, and share of reasons that are verified and
+5. Also report: share of `evidence_strength: thin` verdicts, and share of reasons that are verified and
    independent.
-5. Small set: with about 10 hold-out products, one error moves the score by 10 points. Do not chase one product.
-6. The labelled products are real, so the model may already know them. The judge gets only our verified facts,
+6. Small set: with about 10 hold-out products, one error moves the score by 10 points. Do not chase one product.
+7. The labelled products are real, so the model may already know them. The judge gets only our verified facts,
    never the product name alone.
 
 Command: `…` (set on the day; it goes into `AGENTS.md`, "Stack and commands").

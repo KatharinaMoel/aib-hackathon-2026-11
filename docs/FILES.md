@@ -17,11 +17,13 @@ learn something; fill "For the submission" at 18:15.
 Read by: people, agents looking for where something lives. Change: in the PR that adds, removes or renames a
 file.
 
-**`docs/TEAM.md`** – agreement, roles, timebox for the day, submission checklist. Why: 3–5 strangers need one
-plan. Read by: people. Change: at 15:10 when the team agrees; later by PR.
+**`docs/TEAM.md`** – agreement (a proposal), roles, the checkpoints other files refer to, fallbacks, skeleton
+phase and emergency mode, submission checklist. The detailed minute plan stays with the facilitator, outside the
+repo. Why: 3–5 strangers need one shared frame. Read by: people. Change: at the start when the team agrees;
+later by PR.
 
 **`docs/INTRO.md`** – how the repo came about: principles, the steps and sources it was built from, what is
-decided and what the team decides at 15:10, a 5-minute talk outline and a one-page cheat sheet.
+prepared and what the team decides together at the start, and a one-page cheat sheet.
 - **Why:** strangers join at 15:00 and need to know what is already done and why.
 - **Read by:** everyone at the start; the owner for the intro talk.
 - **Change:** by PR (fast lane) when a decision changes.
@@ -42,7 +44,7 @@ viable product, the smallest version that works end to end), pitfalls per signal
 judge. Why: each signal is one module, one owner, one PR. Read by: people picking tasks, agents building a
 signal or the judge. Change: by PR when a signal is built, dropped or a rule changes.
 
-**`docs/PROPOSALS.md`** – practices that may help; not rules. Why: background for the 15:10 decisions. Read by:
+**`docs/PROPOSALS.md`** – practices that may help; not rules. Why: background for the decisions at the start. Read by:
 people. Change: cross out what we don't want; move a picked practice into `AGENTS.md` or `CONTRIBUTING.md` by
 PR.
 
@@ -58,7 +60,7 @@ Change: by PR; the eval command goes into `AGENTS.md`, "Stack and commands".
 **`AGENTS.md`** – the one rule file: numbered rules, how we write, house rules for code, commands, output
 contract, where things are, git flow. Why: every author – person or agent – follows the same rules; Norma scores
 that consistency. Read by: Codex, Cursor, Copilot directly ([agents.md](https://agents.md)); Claude Code through
-`CLAUDE.md`; people. Change: by PR only; Katharina reviews (`CODEOWNERS`). Always the two-views lane.
+`CLAUDE.md`; people. Change: by PR only; a maintainer who is not the author reviews (`CONTRIBUTING.md`, "Maintainers"). Always the two-views lane.
 
 **`CLAUDE.md`** – a header comment and `@AGENTS.md`. The `@` line makes Claude Code load `AGENTS.md`. Why:
 Claude Code reads `CLAUDE.md`, not `AGENTS.md` ([Claude Code: memory](https://code.claude.com/docs/en/memory)).
@@ -77,12 +79,6 @@ rewrite old rows; the `16:40` row is an example.
 
 **`DEFENCE.md`** – the Norma submission: fixed, accepted and conflict, each with rule, file and reason. Why: the
 Norma brief asks for it. Read by: the Norma judges. Change: write it at 18:15 from `DECISIONS.md`.
-
-**`CODEOWNERS`** – paths whose changes the owner (`@KatharinaMoel`) reviews: rules, agent config, CI. Read by:
-GitHub, which requests the review. Note: on a private repo on GitHub Free, code owners are probably not
-available, and without branch protection nothing is enforced – not verified, see
-[GitHub: about code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
-Until then it is a team rule. Change: by PR.
 
 ## Code and tests
 
@@ -139,7 +135,7 @@ it (the steps are in the script). Each line ends as one of three results:
 Read by: people and agents (rule 7: done means a command passed). Change: by PR; keep its private-path patterns
 in step with `tools/check_tracked.py` and `.gitignore`.
 
-**`tools/pr_lane.py`** – decides a PR's lane (fast / standard / two-views / hotfix) from its changed files and labels,
+**`tools/pr_lane.py`** – decides a PR's lane (fast / standard / two-views / quick) from its changed files and labels,
 then checks what that lane needs: title, description blocks, `Closes #n`, review markers. Why: small PRs stay
 fast, risky ones get a second look, and nobody decides the lane by hand. Read by: CI (`pr / blocks-filled`,
 `review-gate`), `tests/test_pr_lane.py`; you can run it by hand (usage in its docstring). The lane rules for
@@ -162,7 +158,7 @@ label table in `CONTRIBUTING.md`.
 - `review-gate.yml` – the review markers the lane needs (`tools/pr_lane.py reviews`). Red is not a code problem:
   a review is missing. It checks only that markers exist, not that a review is newer than the last push.
 
-Change: by PR (two-views lane); Katharina reviews.
+Change: by PR (two-views lane); a maintainer who is not the author reviews.
 
 ## GitHub templates
 
@@ -196,7 +192,7 @@ Change: by PR. JSON has no comments, so the explanation lives here.
 
 Why: text rules can be ignored; deny rules are enforced by Claude Code
 ([best practices](https://code.claude.com/docs/en/best-practices)). Other agents do not read this file; for them
-`AGENTS.md` applies. Change: by PR; Katharina reviews.
+`AGENTS.md` applies. Change: by PR; a maintainer who is not the author reviews.
 
 **`.claude/skills/check-and-fix/SKILL.md`** – a Claude Code "skill" (instructions the agent loads when needed)
 that runs the Norma loop: `live_check` each changed file → fix → re-check → record. Why: makes `AGENTS.md` rule 5

@@ -70,7 +70,7 @@ uses it, so nobody has to decide by hand.
 | **fast** | only Markdown files, none of them a rule file (`AGENTS.md`, `CONTRIBUTING.md`, `CLAUDE.md`) and none under `.github/` or `.claude/` | block `pr-summary`; the person who merges reads the diff. No issue, no review marker | 2 min |
 | **standard** | everything else, e.g. code in `src/` | all five blocks, `Closes #n`, **view A** | 10 min |
 | **two-views** | label `norma` or `second-opinion`, or a change to rules, CI, agent config, `tools/`, `schema/` | standard plus **view B** | +5 min |
-| **hotfix** | label `hotfix`, only in emergency mode (`docs/TEAM.md`) | blocks `pr-summary`, `pr-test`, `pr-norma`; view A, which may be given at the table and recorded in one line | 5 min |
+| **quick** | label `quick`: only until the walking skeleton (#1) is merged, and in emergency mode (`docs/TEAM.md`) | blocks `pr-summary`, `pr-test`, `pr-norma`; view A, which may be given at the table and recorded in one line | 5 min |
 
 Set `second-opinion` when a PR touches fetched text, keys, shell or network. Set `norma` when it fixes,
 accepts or causes a Norma finding.
@@ -106,6 +106,13 @@ An agent review posted from the author's own account is a "Comment" review; it n
 author can answer; answer it, but it does not block), `Note:` (information). One clear sentence first, details after,
 with `file:line`. If an AI drafted your comment, add "(drafted with <agent>)".
 
+### Maintainers
+
+Maintainers review and merge changes to the rules (`AGENTS.md`, `CONTRIBUTING.md`), CI, agent config, `tools/`
+and `schema/` – always someone who is not the author. We name 2–3 maintainers at the start; anyone on the team
+can be one. (On a personal GitHub repo every collaborator has the same write access, so "maintainer" is a team
+role, not a GitHub setting.)
+
 ## 5. Labels
 
 We sit at one table, so we use few labels:
@@ -115,7 +122,7 @@ We sit at one table, so we use few labels:
 | `task` | issue: one piece of work, one PR | the form |
 | `second-opinion` | touches fetched text, keys, shell or network; adds view B | author or reviewer |
 | `norma` | fixes, accepts or causes a Norma finding; adds view B | author or reviewer |
-| `hotfix` | emergency mode only (`docs/TEAM.md`): fewer blocks, view A only | the caller announces the mode |
+| `quick` | skeleton phase and emergency mode only: fewer blocks, view A at the table | announced out loud to the team |
 
 Create them once: `tools/labels.sh` (needs `gh` with write access). Who is waiting for whom we say out loud.
 
@@ -142,7 +149,7 @@ Rules for findings:
 2. **Every finding goes into the `pr-norma` block** of its PR: rule ID, severity, file:line, fixed / accepted /
    conflict, reason, check before → after. The Norma owner copies all rows into `DECISIONS.md` in one PR at
    17:30. (Many branches appending to the same table at once would cause merge conflicts.) Only the
-   `baseline` row (first check, 15:25) goes in directly, before parallel work starts. A second sweep for PRs
+   `baseline` row (first check after the first code PR) goes in directly. A second sweep for PRs
    merged after 17:30 happens inside the `DEFENCE.md` PR at 18:15.
 3. **Accept only with a reason a judge would believe**, tied to our task. Never accept a security HIGH.
 4. **A conflict** is when two authors (or agents) do the same thing differently or repeat a mistake. Log it,
