@@ -1,7 +1,9 @@
 # Same gate for every author: lint, format, tests, and a filled PR description (CONTRIBUTING.md, sections 3 and 8).
+# Jobs: pr / lint-test and pr / blocks-filled. What to do when one is red: docs/FILES.md.
 name: pr
 on:
   pull_request:
+    # `edited`: re-run when the PR description changes, so blocks-filled turns green after you fill a block.
     types: [opened, edited, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
@@ -16,6 +18,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install uv, then exactly the versions in uv.lock
+        # --locked: fail instead of updating uv.lock, if it does not match pyproject.toml.
         run: pip install uv && uv sync --locked
       - name: Format check (ruff format)
         run: uv run ruff format --check .
@@ -25,26 +28,25 @@ jobs:
         run: uv run pytest
 
   blocks-filled:
+    # Checks the PR title and the required template blocks for this PR's lane (fast / standard / two-views / hotfix).
+    # The lane rules live in tools/pr_lane.py, so this job and review-gate use the same rules.
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read  # needed to list the PR's changed files; nothing is written
     steps:
-      - name: Required PR description blocks have text and no "…"
+      - uses: actions/checkout@v7
+      - name: Title and required blocks for this PR's lane
         env:
-          BODY: ${{ github.event.pull_request.body }}  # via env, never inline in run: (script injection)
+          # Via env, never inline in run: (script injection). Anyone who opens a PR writes the title and body;
+          # pasted straight into the script, they could run as code. As environment variables they stay plain text.
+          BODY: ${{ github.event.pull_request.body }}
+          TITLE: ${{ github.event.pull_request.title }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
         run: |
-          python3 - <<'PY'
-          import os, re, sys
-          body = os.environ.get("BODY") or ""
-          bad = []
-          for name in ["pr-summary", "pr-issue", "pr-test", "pr-norma", "pr-ai"]:
-              m = re.search(rf"<!-- {name}:start -->(.*?)<!-- {name}:end -->", body, re.S)
-              text = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.S).strip() if m else ""
-              if not text or "…" in text:
-                  bad.append(f"{name}: empty, missing or still contains '…'")
-          if not re.search(r"(?i)\b(closes|fixes|resolves) #\d+", body):
-              bad.append("pr-issue: no 'Closes #n'")
-          for b in bad:
-              print(f"  FAIL  {b}")
-          print(f"{len(bad)} block(s) to fill - see CONTRIBUTING.md, section 3.")
-          sys.exit(1 if bad else 0)
-          PY
+          FILES="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[].filename')"
+          export FILES
+          python3 tools/pr_lane.py blocks

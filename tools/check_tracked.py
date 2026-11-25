@@ -4,17 +4,22 @@
 Paths are read NUL-separated (`-z`), so git does not quote names with spaces or non-ASCII characters
 and they cannot slip past the patterns. `--scan` also searches tracked files for token-like strings;
 a file that cannot be read counts as a failure, not as clean.
+
+Run by CI job `guard` (.github/workflows/guard.yml); `tools/check` does the same path check locally.
+See docs/FILES.md.
 """
 
 import re
 import subprocess
 import sys
 
+# Same patterns as PRIVATE and TOKEN in tools/check; change both together. Explained there.
 DENY = [r"^data/", r"^out/", r"^results/", r"(^|/)\.env($|\.)(?!example$)", r"\.labels\."]
 TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{30,}|tvly-[A-Za-z0-9]{20,})")
 
 
 def split_nul(raw):
+    # surrogateescape: a file name that is not valid UTF-8 is kept, not dropped.
     return [x.decode("utf-8", "surrogateescape") for x in raw.split(b"\0") if x]
 
 

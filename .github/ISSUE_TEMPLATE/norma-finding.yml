@@ -1,3 +1,5 @@
+# GitHub issue form for one Norma finding the team must decide on (CONTRIBUTING.md, section 6).
+# Read by GitHub and people. See docs/FILES.md.
 name: Norma finding
 description: One Norma finding the team decides on - fix, accept with a reason, or log as a conflict between authors.
 title: "norma: <rule ID> in <file>"
@@ -39,4 +41,4 @@ body:
     id: decisions-row
     attributes:
       label: DECISIONS.md row
-      description: The exact row you added.
+      description: The exact row for DECISIONS.md. Put it in the PR's pr-norma block too; the Norma owner copies it into DECISIONS.md at 17:30.

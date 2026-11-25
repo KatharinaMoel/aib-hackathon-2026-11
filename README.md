@@ -1,5 +1,8 @@
 # Agents with Taste – team repo
 
+<!-- Start page for people, coding agents and judges: the task, what we know, how to run.
+What every other file is for: docs/FILES.md. -->
+
 Our team repo for the [AI Agents Berlin hackathon](https://aiagentsberlin.xyz/agentic-hackathon), Fri 27 Nov 2026,
 14:00–21:00, The Delta Campus. Main task: the Stackgini challenge "Agents with Taste"
 ([brief, 3 pages](https://aiagentsberlin.xyz/ah3-brief-stackgini-agents-with-taste.pdf)). Side challenge on the same
@@ -10,9 +13,47 @@ code: Norma by Quality Clouds ([brief](https://aiagentsberlin.xyz/ah3-brief-norm
 > When they arrive, we update "What we don't know yet".
 
 **New here? 5 minutes:**
+0. `docs/INTRO.md`: how this repo came about, what is decided, and a one-page cheat sheet.
 1. This README up to "Good and bad reasons" (2 min).
 2. `docs/TEAM.md`: agreement and timebox (1 min).
-3. `AGENTS.md`: rules 1–10 (2 min). `CONTRIBUTING.md`: how a change gets merged.
+3. `AGENTS.md`: rules 1–13 (2 min). `CONTRIBUTING.md`: how a change gets merged.
+4. `docs/FILES.md` when you ask "what is this file for?": one entry per file.
+
+## Repo map
+
+```text
+README.md            – the task, what we know, how evidence is weighed, how to run (this file)
+AGENTS.md            – rules 1–13 for people and agents, house rules for code, commands, output contract
+CLAUDE.md            – one line that makes Claude Code load AGENTS.md
+CONTRIBUTING.md      – how a change gets merged: claim rule, PR blocks, lanes, reviews, labels, Norma loop
+DECISIONS.md         – log of decisions and Norma findings (filled from pr-norma blocks at 17:30)
+DEFENCE.md           – Norma submission: fixed / accepted / conflict, written at 18:15
+CODEOWNERS           – who reviews changes to rules, agent config and CI
+docs/TEAM.md         – agreement, roles, timebox for the day, submission checklist
+docs/SIGNALS.md      – signals the agent can check, free sources, pitfalls, rules for the judge
+docs/STARTER_ISSUES.md – ten first tasks to claim, and the order they merge in
+docs/INTRO.md        – how the repo came about, principles, what is decided, cheat sheet
+docs/RESEARCH.md     – what research says about spotting fake sites: 10 rules with sources
+docs/research/       – the three full literature reviews behind RESEARCH.md
+docs/PROPOSALS.md    – optional practices; only what the team picks becomes a rule
+docs/FILES.md        – what every file is for, who reads it, how to change it
+src/                 – the agent: fetch → judge → verify (built on the day)
+eval/README.md       – eval protocol: hold-out split, the two error counts
+schema/verdict.schema.json – draft output contract for one verdict
+tests/               – pytest, no network; fixtures/ holds hand-written pages of made-up products
+tools/check          – run before every PR; must end "0 must fix"
+tools/pr_lane.py     – decides a PR's lane and what it needs; used by CI
+tools/check_tracked.py – private-file and token check, used by CI
+tools/labels.sh      – creates the four labels once (incl. `hotfix`)
+pyproject.toml, uv.lock, .python-version – dependencies, exact versions, Python 3.12
+.env.example         – names of the keys; copy to .env (never committed)
+.gitignore           – keys, event data and caches git must never pick up
+.mcp.json            – connects coding agents to the Norma MCP server
+.claude/             – Claude Code permissions and the Norma check-and-fix skill
+.github/             – PR template, issue forms, CI workflows (guard, pr, review-gate)
+```
+
+Details per file: `docs/FILES.md`.
 
 ## The task in one paragraph
 
@@ -63,7 +104,8 @@ Ask Stackgini at the kickoff (14:00) if the material has not arrived by then.
 ## Our goal
 
 1. **Both sides right.** On the labelled set, count two numbers: hollow products we called solid, and solid
-   products we called hollow. We try to bring both down, not only one.
+   products we called hollow. ("Solid" and "hollow" are the brief's words; our draft schema uses `trust` /
+   `caution` / `hollow` / `unclear` until we see Stackgini's labels.) We try to bring both down, not only one.
 2. **No reason without a source we fetched.** A reason counts only if our pipeline fetched the URL and the quoted
    text is on that page (`AGENTS.md`, rule 2). Better three checked reasons than ten guesses.
 3. **Say when we are unsure.** If the evidence is thin, the verdict says so and names what is missing. (Our
@@ -111,7 +153,7 @@ git clone git@github.com:KatharinaMoel/aib-hackathon-2026-11.git && cd aib-hacka
 uv sync                # needs uv: https://docs.astral.sh/uv/getting-started/installation/
 cp .env.example .env   # add your keys
 tools/check            # must end with "0 must fix"
-<run command> https://acme-crm.example   # set by 15:30, see AGENTS.md "Stack and commands"
+uv run --env-file .env <run command> https://acme-crm.example   # set by 15:30, see AGENTS.md "Stack and commands"
 ```
 
 ## For the submission (fill in at 18:15)

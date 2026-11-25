@@ -1,4 +1,8 @@
-"""The output contract loads and names the fields every verdict needs."""
+"""The output contract loads and names the fields every verdict needs.
+
+It checks that schema/verdict.schema.json is valid JSON and requires product_url, call and reasons.
+It does not check allowed values or that a real verdict matches; see docs/FILES.md.
+"""
 
 import json
 from pathlib import Path

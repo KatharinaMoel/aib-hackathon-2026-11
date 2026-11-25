@@ -1,25 +1,31 @@
-# Red until both review views are posted (CONTRIBUTING.md, section 4).
+# Red until the review views this PR's lane needs are posted (CONTRIBUTING.md, section 4).
+# fast lane (only non-rule Markdown): no review marker needed. standard: view A. two-views: views A and B.
 # It looks for the marker lines only; it does not check that a review is newer than the last push.
+# Red is not a code problem: a review is missing. See docs/FILES.md.
 name: review-gate
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_review:
+    # labeled/unlabeled: adding `norma` or `second-opinion` changes the lane, so the check runs again.
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+  pull_request_review:  # re-run when a review is posted or edited, so the job can turn green
     types: [submitted, edited]
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: read  # needed to list the PR's files and reviews; nothing is written
 jobs:
-  two-views:
+  review-views:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v9
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            const reviews = await github.paginate(github.rest.pulls.listReviews,
-              { owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number });
-            const has = v => reviews.some(r => (r.body || '').includes(`<!-- review:${v} -->`));
-            const missing = ['correctness', 'consistency'].filter(v => !has(v));
-            if (missing.length) core.setFailed(`Missing review view: ${missing.join(', ')} - see CONTRIBUTING.md, section 4`);
-            else core.info('Both review views found.');
+      - uses: actions/checkout@v7
+      - name: Review views needed for this PR's lane
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          FILES="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[].filename')"
+          REVIEWS="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews" --paginate \
+            --jq '[.[] | {user: .user.login, body: .body}]' | jq -s 'add // []')"
+          export FILES REVIEWS
+          python3 tools/pr_lane.py reviews

@@ -1,4 +1,6 @@
 # changes to agent rules, agent config and CI need the repo owner's review
+# GitHub reads this file and requests that review. On a private repo on GitHub Free it may do nothing
+# (not verified); then it is a team rule. See docs/FILES.md.
 /AGENTS.md        @KatharinaMoel
 /CLAUDE.md        @KatharinaMoel
 /.claude/         @KatharinaMoel

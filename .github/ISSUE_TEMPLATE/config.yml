@@ -1,3 +1,5 @@
+# Settings for GitHub's "New issue" page. See docs/FILES.md.
+# No blank issues: every issue uses a form, so it has a goal and a done-when command.
 blank_issues_enabled: false
 contact_links:
   - name: How we work

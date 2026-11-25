@@ -1,11 +1,15 @@
+# CI: fails if a private path (data/, out/, results/, .env, *.labels.*) or a token-like string is tracked.
+# Runs on every push and PR, so a leak is caught even if `tools/check` was skipped. See docs/FILES.md.
 name: guard
 on: [pull_request, push]
 permissions:
-  contents: read
+  contents: read  # the job only reads the code; it gets no write access
 jobs:
   private-paths:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - name: No private paths or token-like strings tracked
+        # -z: NUL-separated names, so file names with spaces cannot slip past the patterns.
+        # The script exits 1 on a finding, which turns the job red.
         run: git ls-files -z | python3 tools/check_tracked.py --scan

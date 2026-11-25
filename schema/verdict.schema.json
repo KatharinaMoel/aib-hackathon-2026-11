@@ -1,31 +1,61 @@
 {
-  "$comment": "DRAFT – align `call` with the organisers' labels before building on it.",
+  "$comment": "DRAFT – the output contract for one verdict. Align `call` with Stackgini's labels before building on it. Fields marked 'set by code' are never written by the LLM. Explained in docs/FILES.md.",
   "type": "object",
-  "required": ["product_url", "call", "reasons", "run_id"],
+  "additionalProperties": false,
+  "required": ["product_url", "call", "reasons", "not_checked", "evidence_strength", "run_id"],
   "properties": {
     "product_url": {"type": "string"},
-    "call": {"enum": ["trust", "caution", "hollow", "unclear"]},
+    "call": {"enum": ["trust", "caution", "hollow", "unclear"], "description": "if Stackgini's labels have no 'unclear', always make a call and use evidence_strength instead"},
     "alive_product": {"type": ["boolean", "null"]},
     "trust_company": {"type": ["boolean", "null"]},
-    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "evidence_strength": {"enum": ["strong", "thin"], "description": "set by code: strong = at least two verified facts of different kinds"},
     "reasons": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["claim", "axis", "direction", "url", "quote", "tier", "basis"],
+        "additionalProperties": false,
+        "required": ["fact_id", "claim", "axis", "direction", "kind", "url", "tier", "verification"],
         "properties": {
+          "fact_id": {"type": "string", "pattern": "^F[0-9]+$", "description": "the judge cites this ID; code maps it to url, quote and time"},
           "claim": {"type": "string", "description": "one sentence"},
           "axis": {"enum": ["looks", "substance", "risk"]},
           "direction": {"enum": ["pro", "con"]},
-          "url": {"type": "string", "description": "must be a page our pipeline fetched"},
+          "kind": {"enum": ["quote", "measurement"], "description": "quote = text on a page; measurement = a number we measured (404 count, RDAP date)"},
+          "url": {"type": "string", "description": "a page or record our pipeline fetched"},
           "archived_url": {"type": "string"},
           "fetched_at": {"type": "string"},
-          "quote": {"type": "string", "maxLength": 300, "description": "verbatim from the fetched page"},
-          "tier": {"enum": ["independent", "vendor_self", "hypothesis"], "description": "vendor_self only for looks; hypothesis never counts"},
-          "basis": {"enum": ["fetched", "model"]}
+          "quote": {"type": "string", "maxLength": 300, "description": "kind quote: verbatim from the fetched page"},
+          "measurement": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["method", "value"],
+            "properties": {"method": {"type": "string"}, "value": {}}
+          },
+          "tier": {"enum": ["independent", "vendor_self"], "description": "vendor_self counts only for looks"},
+          "verification": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status"],
+            "description": "set by code; a reason without exact or normalized match is dropped",
+            "properties": {
+              "status": {"enum": ["exact", "normalized", "measured"]},
+              "content_sha256": {"type": "string"}
+            }
+          }
         }
       }
     },
+    "not_checked": {
+      "type": "array",
+      "description": "what we tried and could not check; never counted as a con",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["signal", "why"],
+        "properties": {"signal": {"type": "string"}, "why": {"type": "string"}}
+      }
+    },
+    "leads": {"type": "array", "items": {"type": "string"}, "description": "hints from search snippets or model knowledge; never evidence"},
     "run_id": {"type": "string", "description": "git SHA + model + prompt hash"}
   }
 }

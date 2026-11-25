@@ -1,3 +1,5 @@
+# GitHub issue form "Task": one piece of work, one PR (CONTRIBUTING.md, section 2).
+# Read by GitHub (shows the form), people and coding agents. See docs/FILES.md.
 name: Task
 description: One piece of work for one person and their agent. One task = one PR. Done when a command passes.
 title: "task: "

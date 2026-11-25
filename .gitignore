@@ -1,13 +1,16 @@
+# Paths git must never pick up (AGENTS.md, rule 1). Keep in step with the patterns in tools/check and
+# tools/check_tracked.py, which fail if such a file is tracked anyway. See docs/FILES.md.
 # secrets
 .env
 .env.*
+# ...except the template: names only, no values, so it is tracked. (A comment must sit on its own line here.)
 !.env.example
 # participant-only material and results (must stay inside the event)
 data/
 out/
 results/
 *.labels.*
-# caches
+# caches and the virtual environment (uv sync recreates .venv)
 .cache/
 __pycache__/
 .venv/

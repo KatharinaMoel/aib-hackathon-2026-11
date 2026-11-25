@@ -3,19 +3,28 @@
 
 Prints each step before it runs it. Changes nothing. Fails (exit 1) for private files, token-like
 strings, or a failing ruff/pytest run; everything else is a reminder.
+
+Each line is OK, LOOK ("to look at": a reminder) or FAIL ("must fix"). Read by people and coding agents
+before every PR. What the three results mean: docs/FILES.md.
 """
 import re
 import shutil
 import subprocess
 import sys
 
-BRANCH = re.compile(r"^[a-z0-9-]+/[a-z0-9._-]+$")  # <name>/<topic>
+# <name>/<topic>, e.g. kat/fetch-timeout: lower case, exactly one "/".
+BRANCH = re.compile(r"^[a-z0-9-]+/[a-z0-9._-]+$")
 TYPES = ("feat", "fix", "docs", "test", "chore", "refactor")  # same list as AGENTS.md, "Git flow"
+# "<type>: <summary>", e.g. "fix: stop after 5 pages"; builds feat|fix|... from TYPES.
 COMMIT = re.compile(rf"^({'|'.join(TYPES)}): .+")
+# Private paths, same list as tools/check_tracked.py and .gitignore. The .env pattern matches .env
+# and .env.<anything> in any folder, but not .env.example ("(?!example$)": skip if the rest is "example").
 PRIVATE = [r"^data/", r"^out/", r"^results/", r"(^|/)\.env($|\.)(?!example$)", r"\.labels\."]
+# Key-like strings: sk-... (OpenAI-style model keys), ghp_... (GitHub tokens), tvly-... (Tavily keys).
+# The minimum lengths keep short words like "sk-learn" from matching.
 TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{30,}|tvly-[A-Za-z0-9]{20,})")
 
-counts = {"ok": 0, "look": 0, "fail": 0}
+counts = {"ok": 0, "look": 0, "fail": 0}  # ok / to look at / must fix
 
 
 def git(*args):
@@ -23,11 +32,13 @@ def git(*args):
 
 
 def report(good, text, hard=False):
+    # hard=True: a failed step counts as "must fix" and makes the script exit 1; else only "to look at".
     kind = "ok" if good else ("fail" if hard else "look")
     counts[kind] += 1
     print(f"  {kind.upper():>4}  {text}")
 
 
+# Steps 2 and 4 compare with origin/main; without it (no `git fetch` yet) they are skipped.
 has_main = git("rev-parse", "--verify", "--quiet", "origin/main").returncode == 0
 
 print("1/5 Branch name is <name>/<topic>, so everyone sees who works on what.")
@@ -56,13 +67,14 @@ else:
 
 print("5/5 Same gate as CI for every author: ruff format, ruff check, pytest (uv run).")
 if shutil.which("uv") is None:
-    report(False, "uv not found - install it (CONTRIBUTING.md, section 1); step 5 not checked")
+    report(False, "uv not found - install it (CONTRIBUTING.md, section 1); step 5 not checked", hard=True)
 else:
     for cmd in (["ruff", "format", "--check", "."], ["ruff", "check", "."], ["pytest"]):
         res = subprocess.run(["uv", "run", *cmd], capture_output=True, text=True)
+        # Show only the last output line (e.g. "1 passed"); the full output: run the command yourself.
         tail = (res.stdout + res.stderr).strip().splitlines()[-1:] or [""]
         report(res.returncode == 0, f"{' '.join(cmd)}: {tail[0]}", hard=True)
 
-print("Before the PR: the description says what the diff cannot show; Norma findings go into DECISIONS.md.")
+print("Before the PR: the description says what the diff cannot show; Norma findings go into its pr-norma block.")
 print(f"{counts['ok']} ok, {counts['look']} to look at, {counts['fail']} must fix.")
-sys.exit(1 if counts["fail"] else 0)
+sys.exit(1 if counts["fail"] else 0)  # exit code 1 = at least one "must fix"
