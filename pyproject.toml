@@ -6,13 +6,24 @@ name = "agents-with-taste"
 version = "0.1.0"
 description = "Hackathon agent: judges a software product's website, every reason with a checkable link."
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+]
 
 # Tools for writing and checking code; `uv sync` installs them, the agent itself does not need them.
+# Builds the package from src/taste so `uv sync` installs it and `python -m taste` works.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taste"]
+
 [dependency-groups]
 dev = [
     "ruff==0.17.6",  # exact pin: every person and agent formats the same way
     "pytest>=9",
+    "jsonschema>=4.26.0",
 ]
 
 [tool.ruff]
