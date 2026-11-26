@@ -17,6 +17,14 @@ body:
     validations:
       required: true
   - type: input
+    id: now
+    attributes:
+      label: Now (command → what you see today)
+      description: Run it before you write the issue, so we know the problem is real. For a new feature, show what is missing.
+      placeholder: "`uv run python -m taste https://example.com` → fetches every page again, no out/cache/"
+    validations:
+      required: true
+  - type: input
     id: done-when
     attributes:
       label: Done when (command → expected output)

@@ -4,6 +4,8 @@ How a change gets from an issue into `main`. It applies the same way to people a
 what the Norma track scores as "consistency across authors". `AGENTS.md` holds the short rules; this file
 holds the steps. If the two disagree, fix one of them by PR.
 
+Words: we say **PR** (GitHub pull request). A GitLab "merge request" (MR) is the same thing.
+
 Reading time: 5 minutes. Point your agent at this file and at `AGENTS.md` before its first task.
 
 ## 1. Setup (once, 5 minutes)
@@ -142,6 +144,11 @@ Tools your agent gets over MCP (`https://api.qualityclouds.ai/mcp`, OAuth, no ke
 
 The skill `.claude/skills/check-and-fix/` runs this loop in Claude Code (from Quality Clouds' workshop, MIT).
 If `live_check` answers `unlinked`, the repo is not linked in the Norma workspace yet – tell the Norma owner.
+
+**Without an agent** (you write the code yourself): you cannot call `live_check`. Run `tools/check` instead,
+open the PR, and wait for the comment of the Norma GitHub App. Copy each finding from that comment into
+`pr-norma` (fixed / accepted / conflict) and write `live_check ran: no, because written by hand`. Not verified
+yet: whether the App comment lists the same rule IDs as `live_check`.
 
 Rules for findings:
 1. **Fix the cause.** Never delete or bend code just to make a finding go away – the Norma brief scores that
