@@ -40,8 +40,9 @@ and check-and-fix skill; draft verdict schema; signal list; judge rules; eval pr
 **We decide together at the start:**
 - what we keep, change or drop from this proposal – after everyone has read the task details;
 - who is caller, pipeline, judgement, eval, Norma/video (`docs/TEAM.md`, roles), and 2–3 maintainers;
-- whether `main` gets branch protection (required checks, one approval from someone else) – today nothing on
-  GitHub stops an author from merging their own PR; only the rule and the red `review-gate` do;
+- whether we keep the ruleset "protect main" (set 26 Nov: merge only by PR, squash only, checks `lint-test`,
+  `blocks-filled`, `private-paths`, `review-views` green, one approval from someone else; admins may bypass in
+  an emergency, and GitHub marks that merge as "bypassed rules");
 - package name and run command (starter issue #1);
 - model and search API (Tavily is offered by the organisers);
 - verdict values once Stackgini's labels are known (`schema/verdict.schema.json` is a draft);

@@ -60,7 +60,9 @@ Why uv: one lock file, so every author and every agent runs the same versions; `
    (sections 3 and 4).
 7. **Review** for your lane (section 4). Only a `Bug:` blocks.
 8. **Merge.** A person who is not the author squash-merges when every check is green. Agents never merge.
-   Delete the branch.
+   Delete the branch. GitHub enforces this on `main` (ruleset "protect main", Settings → Rules): PR only,
+   squash only, the four checks green, one approval from someone other than the author. Admin bypass is for
+   emergencies only; say so in the PR.
 
 Small PRs: one topic, ideally under 200 changed lines. A big change becomes several issues.
 Why the limit: with agents it is easy to start five things and finish none; under time pressure, merged work
