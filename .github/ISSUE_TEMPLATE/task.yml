@@ -1,5 +1,7 @@
 # GitHub issue form "Task": one piece of work, one PR (CONTRIBUTING.md, section 2).
 # Read by GitHub (shows the form), people and coding agents. See docs/FILES.md.
+# The finished issue has one "### <label>" section per field. Agents read those sections (AGENTS.md, rule 4),
+# so keep the labels stable. No field has a pre-filled value: a pre-filled field would pass "required" untouched.
 name: Task
 description: One piece of work for one person and their agent. One task = one PR. Done when a command passes.
 title: "task: "
@@ -7,41 +9,36 @@ labels: ["task"]
 body:
   - type: markdown
     attributes:
-      value: "Plain English. Paths and commands in backticks. 2 minutes. You can hand this issue to your agent as it is.\n\n**Grey text in a field is only an example – the field is still empty. Write your own.** A filled example: CONTRIBUTING.md, section 2. Set yourself as Assignee (right side, or below on a narrow window) before you start."
+      value: "Plain English, paths and commands in backticks. A filled example: CONTRIBUTING.md, section 2."
   - type: textarea
     id: goal
     attributes:
       label: Goal
-      description: One sentence. What works after this task that does not work now.
-      placeholder: "Example: The fetcher stops after 5 pages per site and caches pages in out/cache/."
+      description: "One sentence: what works after this task that does not work now. E.g. The fetcher stops after 5 pages per site and caches pages in out/cache/."
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: now
     attributes:
-      label: Now (command → what you see today)
-      description: Run it before you write the issue, so we know the problem is real. For a new feature, show what is missing.
-      placeholder: "Example: `uv run python -m taste https://example.com` → fetches every page again, no out/cache/"
+      label: Now
+      description: "Run it before you write the issue, so we know the problem is real. Command → what you see today; for a feature, what is missing. E.g. `uv run python -m taste https://example.com` twice → the second run fetches every page again."
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: done-when
     attributes:
-      label: Done when (command → expected output)
-      placeholder: "Example: `uv run pytest tests/test_fetch.py` → 3 passed"
+      label: Done when
+      description: "Command → expected output. The task is done when this passes. E.g. `uv run pytest tests/test_fetch.py` → 3 passed"
     validations:
       required: true
   - type: textarea
     id: files
     attributes:
       label: Files allowed to change
-      description: One path per line. The agent changes no other file. A shared module needs its owner's OK (AGENTS.md, rule 8).
+      description: "One path per line. The agent changes no other file. A shared module needs its owner's OK (AGENTS.md, rule 8). E.g. src/taste/fetch.py"
       render: text
-  - type: input
-    id: owner
-    attributes:
-      label: Owner
-      description: GitHub handle of the person whose agent does it. Also set Assignees.
+    validations:
+      required: true
   - type: dropdown
     id: risk
     attributes:
@@ -55,4 +52,4 @@ body:
     id: notes
     attributes:
       label: Notes (optional)
-      description: Helper to reuse, links, what is out of scope.
+      description: "Helper to reuse, links, what is out of scope. Last step: set yourself as Assignee (right side; on a narrow window at the very bottom), then Create."

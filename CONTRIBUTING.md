@@ -28,7 +28,7 @@ Why uv: one lock file, so every author and every agent runs the same versions; `
 ## 2. From issue to merge
 
 1. **Issue.** Code work starts from a GitHub issue made with the "Task" form: goal, done-when command, files
-   allowed to change, owner. Docs-only changes (fast lane, section 4) need no issue.
+   allowed to change. Docs-only changes (fast lane, section 4) need no issue.
    A good issue is the best prompt for your agent: the goal says what, the done-when command says when it is
    finished, the file list limits what it may touch. A filled example:
 
@@ -39,13 +39,14 @@ Why uv: one lock file, so every author and every agent runs the same versions; `
    Done when:     `uv run pytest tests/test_fetch.py` → 3 passed
    Files:         src/taste/fetch.py
                   tests/test_fetch.py
-   Owner:         @handle (and set Assignees to the same person)
    Risk:          touches fetched text, keys, shell or network
    Notes:         Reuse `check_url` in src/taste/fetch.py. Out of scope: JavaScript pages.
+   Assignees:     you (right side of the form; on a narrow window at the very bottom)
    ```
 
-   Grey text in an empty form field is only GitHub's example; "Field can not be empty" means you have not
-   written anything there yet.
+   The form checks only that Goal, Now, Done when and Files are not empty. Whether they make sense, the agent
+   checks before it writes code (`AGENTS.md`, rule 4). An issue made with `gh issue create --body` or edited
+   later skips the form, so write the same sections by hand.
 2. **Claim it.** Assign yourself before you start, so nobody does the same work twice. Hold **at most one issue
    in progress and one PR waiting for review**. While your PR waits: review someone else's PR first, then start
    the next issue in its own branch. Fast-lane PRs do not count. Your agent may work on several files at once –

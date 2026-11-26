@@ -23,6 +23,9 @@ because agent rules affect everyone's agent.
    two-views). Only a `Bug:` blocks a merge; other comments are answered, but do not block. Work only on an issue
    assigned to your person: at most one issue in progress and one PR waiting for review. While your PR waits,
    review first, then start the next issue in its own branch. Fast-lane PRs do not count.
+   **Before writing code, read the issue** (`gh issue view <n>`). Stop and ask your person if a section
+   `Goal`, `Now`, `Done when` or `Files allowed to change` is missing or says `_No response_`, or if
+   `Done when` has no command in backticks. Change no file outside `Files allowed to change`.
 5. **Norma in the loop.** After each file you create or change, run Norma `live_check` on it; fix the cause,
    re-check, then `register_applied_actions`. Check each file when it is finished (not after every edit), and once
    more on all changed files before `tools/check` (skill `.claude/skills/check-and-fix/`; tools in

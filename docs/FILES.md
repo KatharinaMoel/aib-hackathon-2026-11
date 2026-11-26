@@ -167,8 +167,8 @@ Change: by PR (two-views lane); a maintainer who is not the author reviews.
 every author, an agent can fill exactly one block, CI checks the blocks. Change: by PR; if you rename a block,
 change `ALL_BLOCKS` in `tools/pr_lane.py` too.
 
-**`.github/ISSUE_TEMPLATE/`** – the new-issue page. `task.yml`: the "Task" form (goal, done-when command, files,
-owner, risk). `norma-finding.yml`: one Norma finding the team must decide on. `config.yml`: no blank issues, plus
+**`.github/ISSUE_TEMPLATE/`** – the new-issue page. `task.yml`: the "Task" form (goal, now, done-when command,
+files, risk; the agent reads its `### ` sections, `AGENTS.md` rule 4). `norma-finding.yml`: one Norma finding the team must decide on. `config.yml`: no blank issues, plus
 a link to `CONTRIBUTING.md`. Why: every issue has a goal and a done-when command an agent can work from. Read by:
 GitHub, people, agents. Change: by PR.
 
