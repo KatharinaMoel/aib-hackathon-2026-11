@@ -29,6 +29,23 @@ Why uv: one lock file, so every author and every agent runs the same versions; `
 
 1. **Issue.** Code work starts from a GitHub issue made with the "Task" form: goal, done-when command, files
    allowed to change, owner. Docs-only changes (fast lane, section 4) need no issue.
+   A good issue is the best prompt for your agent: the goal says what, the done-when command says when it is
+   finished, the file list limits what it may touch. A filled example:
+
+   ```
+   Title:         task: cache fetched pages
+   Goal:          The fetcher stops after 5 pages per site and caches pages in out/cache/.
+   Now:           `uv run python -m taste https://example.com` twice → the second run fetches every page again
+   Done when:     `uv run pytest tests/test_fetch.py` → 3 passed
+   Files:         src/taste/fetch.py
+                  tests/test_fetch.py
+   Owner:         @handle (and set Assignees to the same person)
+   Risk:          touches fetched text, keys, shell or network
+   Notes:         Reuse `check_url` in src/taste/fetch.py. Out of scope: JavaScript pages.
+   ```
+
+   Grey text in an empty form field is only GitHub's example; "Field can not be empty" means you have not
+   written anything there yet.
 2. **Claim it.** Assign yourself before you start, so nobody does the same work twice. Hold **at most one issue
    in progress and one PR waiting for review**. While your PR waits: review someone else's PR first, then start
    the next issue in its own branch. Fast-lane PRs do not count. Your agent may work on several files at once –
