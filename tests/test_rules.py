@@ -269,6 +269,35 @@ def test_rated_passing_offer_is_chosen_over_a_cheaper_unrated_one():
     assert verdict.offer.shop_name == "Rated"
 
 
+def test_a_rated_offer_over_the_pot_does_not_hide_a_cheaper_unrated_one_that_fits():
+    # Found by view B on PR #22 and #24: this idea was dropped with "€20.00 missing".
+    verdict = decide_entry(
+        entry(
+            offer(price="70,00 €", shipping="0,00 €", rating=4.5, name="Rated"),
+            offer(price="40,00 €", shipping="0,00 €", rating=None, name="Unrated"),
+        ),
+        BIRTHDAY,
+        pot_cents=5000,
+    )
+    assert verdict.ok
+    assert verdict.offer.shop_name == "Unrated"
+    assert verdict.offer.total_cents == 4000
+
+
+def test_over_the_pot_names_the_cheapest_offer_that_passes_not_the_rated_one():
+    verdict = decide_entry(
+        entry(
+            offer(price="70,00 €", shipping="0,00 €", rating=4.5, name="Rated"),
+            offer(price="60,00 €", shipping="0,00 €", rating=None, name="Unrated"),
+        ),
+        BIRTHDAY,
+        pot_cents=5000,
+    )
+    assert not verdict.ok
+    assert verdict.missing_cents == 1000
+    assert "costs €60.00, the pot is €50.00 (€10.00 missing)" in verdict.reason
+
+
 def test_unrated_offer_is_chosen_when_no_rated_offer_passes():
     verdict = decide_entry(
         entry(

@@ -167,7 +167,8 @@ def decide_entry(
 ) -> Verdict:
     """Pick the best offer that arrives in time from an accepted merchant, then compare it with the pot.
 
-    Best: a rated merchant before an unrated one, then the lowest total (price + shipping).
+    Best: among the offers the pot can pay, a rated merchant before an unrated one, then the lowest total
+    (price + shipping).
     """
     config = config or RuleConfig()
     product = entry.get("product") if isinstance(entry.get("product"), dict) else {}
@@ -193,15 +194,18 @@ def decide_entry(
             f"no offer passes; the cheapest one: {check_offer(offers[0], birthday, config)}"
         )
 
-    best = min(passing, key=_best_key)
-    total = best.total_cents
-    if total > pot_cents:
+    # The pot comes before the rating: a rated offer over the pot must not hide a cheaper one that fits.
+    fitting = [offer for offer in passing if offer.total_cents <= pot_cents]
+    if not fitting:
+        cheapest = passing[0]  # `offers` is sorted by total, so this is the cheapest that passes
+        total = cheapest.total_cents
         missing = total - pot_cents
         reason = (
             f"cheapest offer that passes costs {format_eur(total)}, "
             f"the pot is {format_eur(pot_cents)} ({format_eur(missing)} missing)"
         )
-        return dropped(reason, best, missing)
+        return dropped(reason, cheapest, missing)
+    best = min(fitting, key=_best_key)
 
     stats = entry.get("price_stats") if isinstance(entry.get("price_stats"), dict) else {}
     low_cents = parse_eur_cents(stats.get("low_text"))
