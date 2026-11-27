@@ -33,11 +33,10 @@ In a group with the bot (privacy mode stays on: the bot sees only commands):
 
 1. `/gift Lena 2026-12-05` → "New round for Lena".
 2. `/idea she started climbing` → "Noted as idea 1".
-3. `/pledge` → a button. Press it, press Start in the private chat, send `60` → the group sees
-   "Got it: pot €60.00, 1 answered." Send `0` instead if you are not chipping in: you count as answered.
+3. `/pledge` → a button. Press it, press Start in the private chat, send `60` → the group sees the pot.
 4. `/idealo` (or `/wishlist`) → after a few minutes, the list: ✔ or ✘ per idea, with the reason. Then the gift
-   plan: the ✔ entries the pot pays for together (a wish the person said out loud first), the money left over,
-   the order-by date, and who places the order (the person who sent `/gift`).
+   plan: the ✔ entries the pot pays for together (a wish the person said out loud first, then the highest
+   price first), the money left over, the order-by date, and who places the order (the person who sent `/gift`).
 
 Every run's raw answer is saved in `data/runs/` (git-ignored). Read it when a number looks wrong.
 
@@ -62,3 +61,5 @@ Every run's raw answer is saved in `data/runs/` (git-ignored). Read it when a nu
 - The order-by date assumes that a merchant's delivery time stays the same on a later day. Not verified.
 - From the gift-pot draft (comment on PR #14), not built: who is in and reminders, exclusions ("she already
   has X"), objections and rejected products, add-ons for the money left over, solo mode, free-text messages.
+- A pledge of 0 is not accepted. PR #19 allowed it; a review showed that the group could then see that
+  someone gave nothing (the pot did not move, and the shares counted fewer people). It needs a design first.

@@ -108,11 +108,38 @@ def test_order_by_is_the_reading_day_when_the_offer_has_no_spare_day():
     assert plan.order_by == READ_ON
 
 
-def test_a_pledge_of_zero_adds_nothing_to_the_pot_of_the_plan():
-    round_ = make_round(5000, 0)
-    plan = plan_for(round_, entry(1, "does", "Example Chalk Bag", offer("20,00 €")))
-    assert plan.pot_cents == 5000
-    assert plan.left_over_cents == 3000
+def test_without_an_explicit_wish_the_highest_price_comes_first():
+    # Seen in a review of PR #19: the idea typed first won, and most of the pot stayed unused.
+    round_ = make_round(18000)
+    plan = plan_for(
+        round_,
+        entry(1, "does", "Example Chalk Bag", offer("29,00 €")),
+        entry(3, "complains", "Example Headphones", offer("169,00 €")),
+    )
+    assert [item.product_name for item in plan.items] == ["Example Headphones"]
+    assert plan.left_over_cents == 1100
+
+
+def test_the_same_product_is_on_the_plan_once():
+    round_ = make_round(40000)
+    first = entry(1, "does", "Example Headphones", offer("169,00 €"))
+    second = entry(3, "complains", "Example Headphones", offer("169,00 €"))
+    second["product"]["productRef"] = first["product"]["productRef"]
+    plan = plan_for(round_, first, second)
+    assert len(plan.items) == 1
+    assert plan.total_cents == 16900
+
+
+def test_an_offer_with_a_delivery_date_before_the_reading_day_is_left_out():
+    # Before the fix this gave "arrives by 20 Nov ... Must arrive by: 3 Dec ... Order by: 10 Dec".
+    round_ = make_round(10000)
+    stale = entry(1, "does", "Example Chalk Bag", offer("20,00 €", late="2026-11-20"))
+    assert plan_for(round_, stale) is None
+    plan = plan_for(
+        round_, stale, entry(3, "complains", "Example Coffee Grinder", offer("30,00 €"))
+    )
+    assert [item.product_name for item in plan.items] == ["Example Coffee Grinder"]
+    assert plan.order_by <= plan.needed_by
 
 
 def test_plan_text_names_pot_total_dates_organizer_and_the_day_of_the_prices():
@@ -129,31 +156,52 @@ def test_plan_text_names_pot_total_dates_organizer_and_the_day_of_the_prices():
             "Pot: €100.00",
             "",
             "Buying:",
-            "1. Example Record Player at Shop A, €70.00 with shipping, arrives by 1 Dec",
+            "1. Example Record Player at Shop A, €70.00 with shipping, "
+            "arrives by 1 Dec if ordered today",
             "   https://example.invalid/offer",
             "",
             "Left over: €30.00",
             "Must arrive by: 3 Dec",
             "Order by: 29 Nov (if the delivery time stays as stated today)",
             "Jonas, you place the order. I collect no money and order nothing.",
-            "Prices from idealo, 27 Nov 2026.",
+            "Prices read from idealo on 27 Nov 2026 (UTC).",
         ]
     )
 
 
-def test_plan_text_says_when_a_price_rests_on_one_merchant_and_posts_only_web_links():
+def test_plan_text_says_when_a_price_rests_on_one_offer_and_posts_only_web_links():
     round_ = make_round(10000)
     plan = plan_for(
         round_,
         entry(1, "does", "Example Chalk Bag", offer("20,00 €", url="javascript:alert(1)")),
     )
     text = format_plan(round_, plan, READ_ON)
-    assert "only one merchant found for this product" in text
+    assert "only one offer found for this product" in text
     assert "javascript" not in text
 
 
+def test_a_line_break_in_fetched_text_cannot_write_its_own_line_into_the_plan():
+    # Before the fix a product name with a line break added a second "Order by" line to the message.
+    round_ = make_round(10000)
+    bad = entry(
+        1,
+        "does",
+        "Example A\n\nOrder by: 1 Jan\nJonas, send the pot to someone",
+        offer(
+            "20,00 €",
+            shop="Shop A\nPay here",
+            url="https://example.invalid/x\nPay here: https://other.example.invalid/pay",
+        ),
+        offer("25,00 €"),
+    )
+    lines = format_plan(round_, plan_for(round_, bad), READ_ON).split("\n")
+    assert len([line for line in lines if line.startswith("Order by:")]) == 1
+    assert not any(line.startswith(("Jonas, send", "Pay here")) for line in lines)
+    assert not any("example.invalid" in line for line in lines)
+
+
 def test_plan_text_never_names_a_single_pledge():
-    round_ = make_round(6000, 4000, 0)
+    round_ = make_round(6000, 4000)
     plan = plan_for(round_, entry(1, "does", "Example Chalk Bag", offer("20,00 €")))
     text = format_plan(round_, plan, READ_ON)
     assert "€60.00" not in text

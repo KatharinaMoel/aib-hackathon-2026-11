@@ -33,15 +33,16 @@ def parse_round_args(text: str) -> tuple[str, date] | None:
 
 
 def parse_amount_cents(text: str) -> int | None:
-    """Turn "50", "50,5" or "€50" into cents. Negative, too large or unreadable is None.
+    """Turn "50", "50,5" or "€50" into cents. Zero, negative, too large or unreadable is None.
 
-    "0" is an answer: the person does not chip in, and their ideas still count (gift-pot draft, PR #14).
+    A pledge of 0 is not accepted: the pot line and the shares would show the group that someone gave
+    nothing (src/giftbot/README.md, "Limits").
     """
     match = _AMOUNT.match(text)
     if match is None:
         return None
     cents = int(match.group(1)) * 100 + int((match.group(2) or "0").ljust(2, "0"))
-    if cents > MAX_PLEDGE_CENTS:
+    if cents <= 0 or cents > MAX_PLEDGE_CENTS:
         return None
     return cents
 
@@ -68,7 +69,7 @@ class Observation:
 
 @dataclass(frozen=True)
 class Pledge:
-    """The most one friend would chip in; 0 means "not this time". Only the bot sees the amount."""
+    """The most one friend would chip in. Only the bot sees the amount; the group sees the pot."""
 
     name: str
     cents: int
@@ -92,14 +93,9 @@ class Round:
         return sum(p.cents for p in self.pledges.values())
 
     def limits_cents(self) -> dict[str, int]:
-        """Each paying friend's limit by name, as split.split_shares() expects. Same names are made unique.
-
-        A pledge of 0 is left out, so the shares never show that someone pays nothing.
-        """
+        """Each friend's limit by name, as split.split_shares() expects. Same names are made unique."""
         limits: dict[str, int] = {}
         for user_id, pledge in self.pledges.items():
-            if pledge.cents == 0:
-                continue
             name = pledge.name if pledge.name not in limits else f"{pledge.name} ({user_id})"
             limits[name] = pledge.cents
         return limits

@@ -38,8 +38,8 @@ def test_parse_round_args(text, expected):
         ("50.50", 5050),
         ("€50", 5000),
         ("50 €", 5000),
-        ("0", 0),
-        ("0,00 €", 0),
+        ("0", None),
+        ("0,00 €", None),
         ("-5", None),
         ("fifty", None),
         ("99999", None),
@@ -99,12 +99,8 @@ def test_same_first_names_keep_separate_limits():
     assert sorted(store.get(-10).limits_cents().values()) == [3000, 5000]
 
 
-def test_a_pledge_of_zero_counts_as_an_answer_but_never_shows_in_the_shares():
+def test_the_person_who_starts_the_round_is_the_organizer():
     store = Store()
     round_ = store.start(-10, "Lena", date(2026, 12, 5), organizer="Jonas")
-    store.pledge(-10, 1, "Jonas", 5000)
-    store.pledge(-10, 2, "Mia", 0)
     assert round_.organizer == "Jonas"
-    assert len(round_.pledges) == 2
-    assert round_.pot_cents == 5000
-    assert round_.limits_cents() == {"Jonas": 5000}
+    assert store.start(-11, "Lena", date(2026, 12, 5)).organizer is None
