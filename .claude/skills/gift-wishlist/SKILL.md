@@ -27,9 +27,46 @@ For each observation, in the order given:
 
 ## Output
 
-Return only JSON as in `docs/GIFT_BOT.md`, "Output of one agent run": one entry per observation with
-`observation_id`, `kind`, `mode`, `query`, `skipped_reason`, `product`, `offers`, `price_stats`.
+Return only one JSON object with the single key `entries`: a list with one entry per observation, in the
+order of the input. The bot rejects every other shape (`src/giftbot/agent.py`, `extract_json_object`), for
+example a bare list of entries. The same format is in `docs/GIFT_BOT.md`, "Output of one agent run".
 
+The values below are made up; the shape is what counts:
+
+```json
+{
+  "entries": [
+    {
+      "observation_id": 1,
+      "kind": "does",
+      "mode": "type_search",
+      "query": "Chalkbag",
+      "skipped_reason": null,
+      "product": {"name": "Example Chalk Bag", "productRef": "<productRef as returned>"},
+      "offers": [
+        {
+          "price_text": "19,99 €",
+          "shipping_text": "3,95 €",
+          "late_delivery_date": "2026-12-02",
+          "shop_name": "Example Shop",
+          "shop_rating": 4.6,
+          "is_marketplace": false,
+          "payments": ["PP"],
+          "url": "<relocatorUrl as returned>"
+        }
+      ],
+      "price_stats": {"low_text": "18,49 €", "low_date": "2026-11-20"}
+    }
+  ]
+}
+```
+
+- `product` is an object with `name` and `productRef`, never a text. `price_stats` is an object with
+  `low_text` and `low_date`, or `null`.
+- A skipped observation: `skipped_reason` holds the reason; `product` and `price_stats` are `null`, `offers`
+  is `[]`.
+- The search returns no `PRODUCT`, or an idealo call fails: `product` and `price_stats` are `null`, `offers`
+  is `[]`, and you go on with the next observation. Never fill the gap from memory.
 - No text before or after the JSON.
 - No ranking, no recommendation, no "best". The Python code decides what goes on the list
   (`src/giftbot/rules.py`), and the group decides what to buy.
