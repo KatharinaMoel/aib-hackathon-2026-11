@@ -21,6 +21,46 @@ wishes for, but it knows what the person owns and does.
 idealo does not produce the ideas. It makes an idea checkable: does the product exist, what does it cost with
 shipping, when does it arrive, how is the merchant rated, where is the price in its 30-day range.
 
+## How a round runs
+
+From the gift-pot draft (comment by `rmohn-dev` on PR #14, 27 Nov 2026). Its goal: remove the usual group-gift
+chaos. The bot decides and asks as little as possible.
+
+| Step | What happens | Part |
+|---|---|---|
+| 1. Setup | The bot asks once, and only for what is missing: who the gift is for and the occasion, who is in (names), the deadline (the latest day the gift may arrive) and the organizer (the person who orders; default: the person who started the round). | bot |
+| 2. Collect | Each person gives a pledge and, if they like, hints about the person. A pledge of €0 is an answer: it does not block the pot, and that person's hints count in full. After each input the bot confirms in one line: "Got it: pot €40, 4 of 6 answered." | bot |
+| 3. Remind | While someone has not answered, the bot ends its reply by tagging that person once. | bot |
+| 4. Close | The pot closes when every named person has answered, or when the organizer writes "close the pot". The bot posts "Pot closed: €60. Working on ideas." | bot |
+| 5. Research | One agent run checks the hints on idealo, the strongest hint first. | skills |
+| 6. Plan | The code builds the gift plan: what fits the pot, the total prices, the order date, the money left over. | rules |
+| 7. Post | The bot posts the plan. An objection changes the plan. A product the group rejected never comes back. | bot |
+
+- **Solo mode.** One person with a budget runs the same steps. The pot closes when that person has given a
+  budget and hints.
+- **Who gave what stays private.** The group sees the total and how many people pledged. It never sees who gave
+  how much or who gave nothing.
+- **The person who gets the gift sees nothing:** not the pot, not the hints, not the plan. If that person seems
+  to be in the chat, the bot says so and stops posting details.
+- **What the bot remembers in a round:** every pledge, every hint and exclusion ("she already has X"), every
+  product it proposed and every objection.
+- **No hints at all.** The bot asks once for the person's age and the relationship (colleague, uncle, best
+  friend). The agent then searches product types that fit almost anyone: coffee and tea, care products, sweets,
+  kitchen helpers, plants, cosy home items. This is a case where the idea does not come from a friend (see
+  "Open for the team").
+
+## How the bot talks
+
+From the gift-pot draft.
+
+- Casual, friendly, short. Chat-sized messages, no walls of text.
+- Default language: English. If a person writes in German, the bot answers that person in German. In a mixed
+  group the summaries stay in English.
+- At most one emoji per message.
+- The bot handles no payment and no order. It never says that money was collected or that an order was placed.
+- The organizer orders with their own address. The bot does not ask for an address and stores none.
+- When a result rests on thin data (only one merchant found), the bot says so.
+
 ## What the group sees (made-up numbers)
 
 ```
@@ -37,6 +77,25 @@ Wishlist for Lena · birthday Sat 5 Dec · pot €180 (4 pledged)
   dropped: cheapest offer that passes costs €240.00, the pot is €180.00
 ```
 
+The gift-pot draft ends with a gift plan instead of a list (made-up numbers):
+
+```
+🎁 Gift plan for Lena
+Pot: €180.00
+
+Buying:
+1. Headphones, newer generation at <merchant>, €169.00 with shipping, arrives by 2 Dec
+   <link>
+
+Left over: €11.00 → 3 small ideas that fit
+Order by: 28 Nov · must arrive by: 3 Dec
+Jonas, you place the order.
+Prices from idealo, 27 Nov 2026.
+```
+
+The draft writes "delivery x days". idealo states a date (`late_delivery_date`), so the plan shows the date.
+Whether the group gets the list, the plan or both: see "Open for the team".
+
 ## Three parts, one contract
 
 ```
@@ -49,7 +108,7 @@ Telegram group ──► bot ──► agent run (skills) ──► idealo MCP
 
 | Part | Does | Does not |
 |---|---|---|
-| **Bot** (`src/giftbot/bot.py`, `telegram.py`, `state.py`, `agent.py`) | collects observations and pledges, starts the agent run, posts the list | decide anything about products or money |
+| **Bot** (`src/giftbot/bot.py`, `telegram.py`, `state.py`, `agent.py`) | runs the round (setup, pledges, hints, reminders, closing the pot), starts the agent run, posts the list and the plan | decide anything about products or money |
 | **Skills** (`.claude/skills/idealo-lookup/`, `observation-to-gift/`, `gift-wishlist/`) | turn an observation into a search, call the MCP, copy idealo's fields unchanged | compute sums, compare dates, rank, advise |
 | **Rules** (`src/giftbot/rules.py`, `split.py`) | total price, arrival check, merchant check, ✔ or ✘ with a reason, shares | call the network or a model |
 
@@ -57,6 +116,10 @@ Who owns which part: see the assigned issues.
 
 Principle: **the agent finds facts, the code decides.** That keeps money and dates testable without network
 (AGENTS.md, rule 12) and every number traceable to an MCP response (rule 2).
+
+The gift-pot draft tells the agent "you decide yourself". We keep that towards the group: the bot decides, the
+group does not vote on every step. Inside the bot the split above stays: the agent reads texts and finds facts,
+the code does the sums and the dates.
 
 ## The contract
 
@@ -123,6 +186,30 @@ One entry per observation, in the same order. Texts are copied from the MCP resp
 Rules for every MCP call are in `docs/IDEALO_TOOLS.md`, "Rules for our code": keep only `itemType == "PRODUCT"`,
 never use the search price as a price someone can pay, at most 4 calls per observation.
 
+### Proposed additions from the gift-pot draft (not built)
+
+None of these is in the skills (PR #14) or in `rules.py` (PR #13) yet. Each one needs a team OK first, because
+three parts depend on the contract.
+
+| Where | Field | Values | For |
+|---|---|---|---|
+| input | `occasion` | text | setup: "birthday", "farewell" |
+| input | `deadline` | date | the latest day the gift may arrive; would replace `birthday`, so the bot works for any occasion |
+| input | `exclusions[]` | texts | "she already has X", "he hates Y": the agent never searches these |
+| input | `rejected[]` | `productRef` values | products the group rejected: the agent never returns them again |
+| input | `age`, `relationship` | text | only when there is no hint at all |
+| output | `fetched_at` per entry | time of the MCP call | the line "Prices from idealo, 27 Nov 2026" (AGENTS.md, rule 2). idealo also sends a time stamp per offer, `freshness` (`docs/IDEALO_TOOLS.md`) |
+
+The draft names four kinds of hint. Two of them are not a `kind` yet:
+
+| In the draft | `kind` here | Note |
+|---|---|---|
+| explicit need: "she said she needs headphones" | `said` | highest weight: these entries come first in the plan |
+| interest: "likes coffee, plants, running" | new: `likes` | close to `does`, but names a taste, not an activity |
+| experience: "wants to go to the Christmas market" | new: `wants_to_do` | the agent names products that fit: insulated mug, warm gloves |
+| exclusion: "she already has X", "he hates Y" | none | not an observation; goes into `exclusions[]` |
+| – | `owns_old`, `complains` | in this file, not in the draft |
+
 ## Rules the code applies (defaults – the team can change them)
 
 | Rule | Default |
@@ -134,6 +221,27 @@ never use the search price as a price someone can pay, at most 4 calls per obser
 | Over the pot | entry is ✘ with the missing amount; the bot never asks anyone to pay more |
 | Shares | in proportion to each person's limit; nobody pays more than their limit |
 | Price position | a fact ("today €8.00 above the 30-day low"), never a forecast |
+
+### Rules from the gift-pot draft
+
+The table above already covers four rules of the draft: total price with shipping, offers that arrive too late
+are dropped, nothing goes over the pot, 2 buffer days. New, and not in `rules.py` yet:
+
+| Rule | Proposal | Part |
+|---|---|---|
+| Gift plan | one main gift, or a combination of ✔ entries within the pot; `said` entries first | rules |
+| Several items | prefer offers from the same merchant, to save shipping | rules |
+| Order by | the day the offers were read, plus the days between `late_delivery_date` and the deadline minus 2 days. The bot proposes the date and asks for an OK. If someone names another date, the code checks it and the bot warns if the gift would be late | rules, bot |
+| Left over | pot minus the total of the plan, shown as "€8.11 left". Then 3 small add-ons within that amount, and a button "Show 20 more ideas" | rules, skills, bot |
+| Close early | the deadline is less than 7 days away and answers are missing: the bot suggests to the organizer to close the pot now | rules, bot |
+| Re-check | right before the final post, the bot reads the chosen offers again. If a price or the availability changed, the code builds the plan again first | bot, rules |
+| Conflicting hints | a concrete statement beats a vague one; the majority beats a single voice; a real tie: drop the theme and say so in one line; ask the group only if the top pick depends on it, as one yes/no question | skills |
+| Need without a model | "needs headphones": the draft picks a solid mid-range model and gives the reason in one sentence. This clashes with "do not rank, do not advise" (see "Open for the team") | skills |
+
+Limits: "Show 20 more ideas" with total price, merchant and link needs one `get_product_offers` call per
+product, so 20 calls, and two searches (one search returns 10 results). We allow 4 calls per observation, and the
+trial has 500 calls per day (`docs/IDEALO_TOOLS.md`, "Limits", not checked). The search price alone is not a
+price someone can pay.
 
 ## How the bot reaches idealo
 
@@ -175,6 +283,11 @@ Read on 27 Nov 2026 in the [Bot API](https://core.telegram.org/bots/api) and
 | How long a full run with several observations takes | time one run in the rehearsal |
 | Scale of `shop.rating` | `data/idealo-livecheck-2026-11-27.jsonl`, before the team sets the threshold |
 | 500 MCP calls per day are enough for rehearsal and demo | count the calls of one run |
+| A bot cannot list the members of a group, so it has to ask who is in (gift-pot draft) | [available methods](https://core.telegram.org/bots/api#available-methods) |
+| How the bot tags a person who has no username | [MessageEntity](https://core.telegram.org/bots/api#messageentity), type `text_mention` |
+| A button under a message, for "Show 20 more ideas" | [InlineKeyboardMarkup](https://core.telegram.org/bots/api#inlinekeyboardmarkup) |
+| The delivery time of an offer stays the same when the order is placed some days later; the rule "Order by" depends on it | no source found; ask idealo |
+| Which idealo field says that an offer is in stock | `docs/IDEALO_TOOLS.md` lists the search filter `availableOnly` and `delivery.deliveryStatus`; a stock field per offer: not seen |
 
 ## Open for the team
 
@@ -182,3 +295,21 @@ Read on 27 Nov 2026 in the [Bot API](https://core.telegram.org/bots/api) and
   only from three?
 - Which merchant rating is the minimum?
 - The vote on the list: Telegram poll, or nothing?
+
+From the gift-pot draft (comment on PR #14, 27 Nov 2026):
+
+- Who reads the chat? The draft is one agent that understands free text ("I'm in for 10", "ich geb nichts") and
+  answers in the person's language. This file has one agent run per round; how the bot understands free text is
+  not decided. Proposal: a fourth skill reads one chat message and returns JSON (pledge, hint, exclusion,
+  objection), and the code keeps the ledger. Cost: one model call per message.
+- Pledge in private (this file) or as a message in the group (draft)? A message in the group shows everyone who
+  gave how much. The draft wants to avoid exactly that.
+- List, plan or both? This file shows every hint with ✔ or ✘ and lets the group choose. The draft lets the bot
+  choose one plan and then takes objections.
+- May the agent bring its own ideas? The draft does so in three places: no hints (product types that fit almost
+  anyone), experiences (products that fit), add-ons for the money left over. This file says the idea comes from
+  a friend.
+- Which product for a need without a model: the draft's "solid mid-range model", or a fixed rule such as "the
+  first product with at least 3 offers" (`idealo-lookup` in PR #14, line marked TEAM)?
+- `birthday` or `deadline` as the field name?
+- One skill file for the whole flow (`gift-pot-agent`, as drafted) or the three skills of PR #14?
