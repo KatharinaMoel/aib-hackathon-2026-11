@@ -61,7 +61,8 @@ def test_list_has_one_block_per_observation_in_order():
 
     assert blocks[1].startswith('✔ Example Headphones 5 · from Jonas: "her headphones are ancient"')
     assert "€70.00 with shipping · arrives by 2 Dec · merchant 4.6" in blocks[1]
-    assert "today €8.00 above the 30-day low" in blocks[1]
+    assert "product 30-day low: €62.00" in blocks[1]
+    assert "above the 30-day low" not in blocks[1]
     # €70.00 split by limits €50 and €30: €43.75 and €26.25.
     assert "shares €26.25 to €43.75" in blocks[1]
 
@@ -96,3 +97,20 @@ def test_split_message_keeps_parts_under_the_limit():
     assert all(len(p) <= 50 for p in parts)
     assert "\n".join(parts) == text
     assert split_message("x" * 120, limit=50) == ["x" * 50, "x" * 50, "x" * 20]
+
+
+def test_unrated_shop_is_shown_next_to_the_merchant():
+    output = {
+        "entries": [
+            {
+                "observation_id": 1,
+                "skipped_reason": None,
+                "product": {"name": "Example Headphones 5", "productRef": "r1"},
+                "offers": [offer("39,20 €", rating=None)],
+                "price_stats": {"low_text": "39,20 €", "low_date": "2026-11-20"},
+            }
+        ]
+    }
+    block = format_wishlist(make_round(), output).split("\n\n")[1]
+    assert "€39.20 with shipping · arrives by 2 Dec · unrated shop" in block
+    assert "product 30-day low: €39.20" in block
