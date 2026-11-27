@@ -38,6 +38,13 @@ parts: bot, skills, rules.
 - **Read by:** everyone who writes one of the parts, and their agents.
 - **Change:** by PR (fast lane); tell the team before you change a field of the contract.
 
+**`docs/SERVICE_PLAN.md`** – a proposal, not built: move the idealo part of the bot from Claude Code skills into
+Python code, so the bot follows the skills' rules every time.
+- **Why:** today the search rules are instructions to a model; the plan says what to move, in which order, and
+  what is not verified (first: the idealo login from Python).
+- **Read by:** whoever continues the gift bot after the hackathon, and their agents.
+- **Change:** by PR (fast lane); each step of the plan becomes its own PR.
+
 **`src/README.md`** – placeholder for the code. Why: git does not track empty folders; the code is built on the
 day, once the team has picked the idea. Read by: people, agents. Change: once code exists.
 
