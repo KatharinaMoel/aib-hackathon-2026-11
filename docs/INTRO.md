@@ -49,7 +49,7 @@ a finding disappear.
 ## 4. From issue to merge
 
 Issue → branch `<name>/<topic>` → build with your agent, with a test → Norma `live_check` → `tools/check` → PR
-with the template's blocks → review → **someone else** merges. While your PR waits, review someone else's.
+with the template's blocks → **another person approves** → a person merges (the author may). While your PR waits, review someone else's.
 Details: `CONTRIBUTING.md`.
 
 **Review lanes** (set by `tools/pr_lane.py`): fast (Markdown only) · standard (code: review A) · two-views (rules,

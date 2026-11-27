@@ -10,7 +10,7 @@ See docs/FILES.md. -->
    be the caller; we pick one at the start.
 2. First a walking skeleton end to end, ugly is fine. After that, only changes that make the demo better.
 3. Small PRs, one topic each; one issue in progress and one PR waiting per person – while it waits, review.
-   Someone else merges when every check is green, incl. the review for the PR's lane (`CONTRIBUTING.md`,
+   A person merges when every check is green – the author too, once another person approved – incl. the review for the PR's lane (`CONTRIBUTING.md`,
    section 4). Only a `Bug:` blocks.
 4. Every number comes from a logged idealo MCP call (`AGENTS.md`, rule 2). Data and keys stay out of git and
    chat.
