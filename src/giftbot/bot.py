@@ -8,10 +8,13 @@ How to change: keep handlers thin; put logic in state.py or wishlist.py, where t
 Commands (privacy mode stays on, so in a group the bot sees only commands):
   group:   /gift <name> <YYYY-MM-DD> · /idea <observation> · /pledge · /idealo (or /wishlist) · /help
   private: /start (from the pledge button) · then the amount, e.g. "50"
+
+After the list, /idealo posts the gift plan of plan.py: what to buy with the pot, and when to order.
 """
 
 import asyncio
 import logging
+from datetime import UTC, datetime
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
@@ -24,6 +27,7 @@ from telegram.ext import (
 )
 
 from giftbot.agent import AgentError, run_agent
+from giftbot.plan import build_plan, format_plan
 from giftbot.rules import format_eur
 from giftbot.state import (
     Store,
@@ -32,7 +36,7 @@ from giftbot.state import (
     parse_round_args,
     pledge_payload,
 )
-from giftbot.wishlist import changes_note, format_wishlist, split_message
+from giftbot.wishlist import changes_note, decide_round, format_wishlist, split_message
 
 log = logging.getLogger(__name__)
 
@@ -40,8 +44,8 @@ HELP = (
     "I turn what you noticed about a person into a checked gift list.\n\n"
     "1. /gift Lena 2026-12-05 – start a round\n"
     "2. /idea her headphones are ancient – one observation per command\n"
-    "3. /pledge – tell me in private the most you would chip in\n"
-    "4. /idealo – I check every idea on idealo and post the list"
+    "3. /pledge – tell me in private the most you would chip in \n"
+    "4. /idealo – I check every idea on idealo, post the list and a gift plan"
 )
 _PENDING = "pledge_chat_id"  # key in user_data: the group a private pledge is for
 
@@ -65,9 +69,10 @@ async def gift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.effective_message.reply_text("Usage: /gift <name> <YYYY-MM-DD>")
         return
     person, birthday = parsed
-    context.bot_data["store"].start(update.effective_chat.id, person, birthday)
+    organizer = _name(update)
+    context.bot_data["store"].start(update.effective_chat.id, person, birthday, organizer)
     await update.effective_message.reply_text(
-        f"New round for {person}, birthday {birthday.isoformat()}.\n"
+        f"New round for {person}, birthday {birthday.isoformat()}. {organizer} places the order.\n"
         "Add ideas with /idea <what you noticed>, then /pledge."
     )
 
@@ -145,9 +150,9 @@ async def idealo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "First /gift <name> <date>, then at least one /idea."
         )
         return
-    if not round_.pledges:
-        log.info("idealo stopped in chat %s: no pledge", chat_id)
-        await update.effective_message.reply_text("Nobody pledged yet. Use /pledge first.")
+    if round_.pot_cents == 0:
+        log.info("idealo stopped in chat %s: the pot is empty", chat_id)
+        await update.effective_message.reply_text("The pot is still empty. Use /pledge first.")
         return
     running: set[int] = context.bot_data["running"]
     if chat_id in running:
@@ -174,6 +179,12 @@ async def idealo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             text += "\n\n" + note
         for part in split_message(text):
             await context.bot.send_message(chat_id, part, disable_web_page_preview=True)
+        read_on = datetime.now(UTC).date()  # the day the agent read the offers
+        # The plan uses the same snapshot as the list: the ideas and the pot the search used.
+        plan = build_plan(checked, decide_round(checked, output), read_on)
+        if plan is not None:
+            for part in split_message(format_plan(checked, plan, read_on)):
+                await context.bot.send_message(chat_id, part, disable_web_page_preview=True)
     except AgentError as err:
         log.warning("agent run failed for chat %s: %s", chat_id, err)
         await update.effective_message.reply_text(f"Sorry, the idealo check failed: {err}")

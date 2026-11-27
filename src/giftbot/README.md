@@ -5,7 +5,7 @@ The idea and the contract: `docs/GIFT_BOT.md`. This file: how to run it, test it
 ```text
 Telegram group ──► bot.py ──► agent.py: `claude -p` + skill gift-wishlist ──► idealo MCP
                      ▲                         │ facts as JSON
-                     └── wishlist.py ◄── rules.py, split.py
+                     └── wishlist.py, plan.py ◄── rules.py, split.py
 ```
 
 | File | Does |
@@ -14,6 +14,7 @@ Telegram group ──► bot.py ──► agent.py: `claude -p` + skill gift-wis
 | `state.py` | rounds, observations, pledges (in memory) |
 | `agent.py` | starts one `claude -p` run; only the skill and the four idealo tools are allowed |
 | `wishlist.py` | writes the list from the verdicts of `rules.py` |
+| `plan.py` | picks the gift plan from the ✔ entries: what to buy with the pot, what is left over, order by |
 | `rules.py`, `split.py`, `config.py` | money, dates, merchant checks, shares |
 
 ## Run it
@@ -33,7 +34,9 @@ In a group with the bot (privacy mode stays on: the bot sees only commands):
 1. `/gift Lena 2026-12-05` → "New round for Lena".
 2. `/idea she started climbing` → "Noted as idea 1".
 3. `/pledge` → a button. Press it, press Start in the private chat, send `60` → the group sees the pot.
-4. `/idealo` (or `/wishlist`) → after a few minutes, the list: ✔ or ✘ per idea, with the reason.
+4. `/idealo` (or `/wishlist`) → after a few minutes, the list: ✔ or ✘ per idea, with the reason. Then the gift
+   plan: the ✔ entries the pot pays for together (a wish the person said out loud first, then the highest
+   price first), the money left over, the order-by date, and who places the order (the person who sent `/gift`).
 
 Every run's raw answer is saved in `data/runs/` (git-ignored). Read it when a number looks wrong.
 
@@ -55,3 +58,8 @@ Every run's raw answer is saved in `data/runs/` (git-ignored). Read it when a nu
 - Anyone who finds the bot can use it and spend the idealo quota (500 calls per day, trial).
 - A full run with a real `claude -p` and idealo is not verified yet.
 - With two pledges, each person can work out the other's limit from the pot (`docs/GIFT_BOT.md`, open point).
+- The order-by date assumes that a merchant's delivery time stays the same on a later day. Not verified.
+- From the gift-pot draft (comment on PR #14), not built: who is in and reminders, exclusions ("she already
+  has X"), objections and rejected products, add-ons for the money left over, solo mode, free-text messages.
+- A pledge of 0 is not accepted. PR #19 allowed it; a review showed that the group could then see that
+  someone gave nothing (the pot did not move, and the shares counted fewer people). It needs a design first.

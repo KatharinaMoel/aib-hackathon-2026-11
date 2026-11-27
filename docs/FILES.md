@@ -32,6 +32,12 @@ prepared and what the team decides together at the start, and a one-page cheat s
 people. Change: cross out what we don't want; move a picked practice into `AGENTS.md` or `CONTRIBUTING.md` by
 PR.
 
+**`docs/GIFT_BOT.md`** – the idea we build ("a wishlist without a wishlist") and the contract between its three
+parts: bot, skills, rules.
+- **Why:** three people build three parts at the same time and need one shared data format.
+- **Read by:** everyone who writes one of the parts, and their agents.
+- **Change:** by PR (fast lane); tell the team before you change a field of the contract.
+
 **`src/README.md`** – placeholder for the code. Why: git does not track empty folders; the code is built on the
 day, once the team has picked the idea. Read by: people, agents. Change: once code exists.
 
@@ -96,7 +102,7 @@ tests worth writing. Read by: pytest, CI `pr / lint-test`. Change: add a test wi
 an LLM, a paid API or the network.
 
 **`src/giftbot/`** – the gift bot. `src/giftbot/README.md` says how to run, try, test and change the Telegram
-side (`bot.py`, `state.py`, `agent.py`, `wishlist.py`); `docs/GIFT_BOT.md` holds the idea and the contract.
+side (`bot.py`, `state.py`, `agent.py`, `wishlist.py`, `plan.py`); `docs/GIFT_BOT.md` holds the idea and the contract.
 Read by: everyone who works on the bot, and their agents. Change: by PR, with a test in `tests/test_giftbot_*.py`.
 
 **`tests/test_pr_lane.py`** – tests for `tools/pr_lane.py`: which files make a PR fast, standard or two-views;
