@@ -176,6 +176,10 @@ that runs the Norma loop: `live_check` each changed file → fix → re-check �
 a routine. Change: **do not edit** – Quality Clouds' text (MIT), copied unchanged; our additions go into
 `CONTRIBUTING.md`.
 
+**`.claude/skills/group-gift/SKILL.md`** – a Claude Code skill for the group-gift chat: classify each message,
+keep pledges in `data/crew.json`, find a gift on idealo that fits the pot and arrives in time, run a vote. Why:
+the same chat rules for every agent in the demo. Change: by PR; status is "proposal" until the team picks the idea.
+
 ## Other files
 
 **`.gitignore`** – paths git must never pick up: keys, event data (`data/`, `out/`, `results/`, `*.labels.*`),
