@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 
+from giftbot.agent import DEFAULT_MAX_BUDGET_USD
 from giftbot.bot import build_application
 
 log = logging.getLogger("giftbot")
@@ -25,8 +26,13 @@ def main() -> None:
         sys.exit(1)
     timeout_s = float(os.environ.get("GIFTBOT_AGENT_TIMEOUT_SECONDS", "600"))
     model = os.environ.get("GIFTBOT_CLAUDE_MODEL", "").strip() or None
-    log.info("gift bot starting (agent timeout %g s)", timeout_s)
-    build_application(token, timeout_s, model).run_polling()
+    max_budget_usd = float(
+        os.environ.get("GIFTBOT_MAX_BUDGET_USD", "").strip() or DEFAULT_MAX_BUDGET_USD
+    )
+    log.info(
+        "gift bot starting (agent timeout %g s, budget $%g per run)", timeout_s, max_budget_usd
+    )
+    build_application(token, timeout_s, model, max_budget_usd).run_polling()
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ Telegram group ──► bot.py ──► agent.py: `claude -p` + skill gift-wis
 
 1. Create a bot: chat with `@BotFather`, send `/newbot`, copy the token.
 2. Add to `.env`: `TELEGRAM_BOT_TOKEN=<token>`. Optional: `GIFTBOT_AGENT_TIMEOUT_SECONDS=600`,
-   `GIFTBOT_CLAUDE_MODEL=sonnet`.
+   `GIFTBOT_CLAUDE_MODEL=sonnet`, `GIFTBOT_MAX_BUDGET_USD=3` (one run stops when it has cost this much).
 3. Connect idealo once in Claude Code on this machine: `claude mcp add --transport http idealo
    https://mcp.idealo.com/mcp`, then `/mcp` → `idealo` → Authenticate. The bot uses this login.
 4. The skills must be in `.claude/skills/` (branch `kat/gift-skills-skeleton` until it is merged).
@@ -38,7 +38,13 @@ In a group with the bot (privacy mode stays on: the bot sees only commands):
    plan: the ✔ entries the pot pays for together (a wish the person said out loud first, then the highest
    price first), the money left over, the order-by date, and who places the order (the person who sent `/gift`).
 
-Every run's raw answer is saved in `data/runs/` (git-ignored). Read it when a number looks wrong.
+Every run leaves two files in `data/runs/` (git-ignored). Read them when a number looks wrong:
+
+- `<time>.calls.json` – one row per idealo call: tool, arguments, time, whether it failed.
+- `<time>.jsonl` – the whole run, including every idealo answer.
+
+The bot log says how many idealo calls a run made, and warns when a run used more than the 4 calls per idea
+the skill `idealo-lookup` allows.
 
 ## Test it
 
