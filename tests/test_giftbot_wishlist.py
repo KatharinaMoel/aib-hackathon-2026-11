@@ -51,7 +51,9 @@ AGENT_OUTPUT = {
 
 
 def test_header_shows_weekday_and_pot_but_no_single_pledge():
-    assert header(make_round()) == "Wishlist for Lena · birthday Sat 5 Dec · pot €80.00 (2 pledged)"
+    assert (
+        header(make_round()) == "Wishlist for Lena · birthday Sat 5 Dec · pot €80.00 (2 answered)"
+    )
 
 
 def test_list_has_one_block_per_observation_in_order():
