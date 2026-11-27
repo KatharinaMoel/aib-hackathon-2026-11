@@ -51,7 +51,9 @@ AGENT_OUTPUT = {
 
 
 def test_header_shows_weekday_and_pot_but_no_single_pledge():
-    assert header(make_round()) == "Wishlist for Lena · birthday Sat 5 Dec · pot €80.00 (2 pledged)"
+    assert (
+        header(make_round()) == "Wishlist for Lena · birthday Sat 5 Dec · pot €80.00 (2 answered)"
+    )
 
 
 def test_list_has_one_block_per_observation_in_order():
@@ -83,7 +85,7 @@ def test_list_uses_the_round_as_it_was_when_the_run_started():
 
     text = format_wishlist(checked, AGENT_OUTPUT)
     assert "coffee machine" not in text
-    assert "pot €80.00 (2 pledged)" in text
+    assert "pot €80.00 (2 answered)" in text
     note = changes_note(checked, round_)
     assert "1 idea(s) added during the check are not in this list" in note
     assert "the pot is now €100.00; this list used €80.00" in note

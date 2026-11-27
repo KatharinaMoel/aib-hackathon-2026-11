@@ -33,12 +33,15 @@ def parse_round_args(text: str) -> tuple[str, date] | None:
 
 
 def parse_amount_cents(text: str) -> int | None:
-    """Turn "50", "50,5" or "€50" into cents. Zero, negative, too large or unreadable is None."""
+    """Turn "50", "50,5" or "€50" into cents. Negative, too large or unreadable is None.
+
+    "0" is an answer: the person does not chip in, and their ideas still count (gift-pot draft, PR #14).
+    """
     match = _AMOUNT.match(text)
     if match is None:
         return None
     cents = int(match.group(1)) * 100 + int((match.group(2) or "0").ljust(2, "0"))
-    if cents <= 0 or cents > MAX_PLEDGE_CENTS:
+    if cents > MAX_PLEDGE_CENTS:
         return None
     return cents
 
@@ -65,7 +68,7 @@ class Observation:
 
 @dataclass(frozen=True)
 class Pledge:
-    """The most one friend would chip in. Only the bot sees the amount; the group sees the pot."""
+    """The most one friend would chip in; 0 means "not this time". Only the bot sees the amount."""
 
     name: str
     cents: int
@@ -79,6 +82,7 @@ class Round:
     person: str
     birthday: date
     country: str = "DE"
+    organizer: str | None = None  # the person who orders the gift: whoever started the round
     observations: list[Observation] = field(default_factory=list)
     pledges: dict[int, Pledge] = field(default_factory=dict)  # key: Telegram user id
 
@@ -88,9 +92,14 @@ class Round:
         return sum(p.cents for p in self.pledges.values())
 
     def limits_cents(self) -> dict[str, int]:
-        """Each friend's limit by name, as split.split_shares() expects. Same names are made unique."""
+        """Each paying friend's limit by name, as split.split_shares() expects. Same names are made unique.
+
+        A pledge of 0 is left out, so the shares never show that someone pays nothing.
+        """
         limits: dict[str, int] = {}
         for user_id, pledge in self.pledges.items():
+            if pledge.cents == 0:
+                continue
             name = pledge.name if pledge.name not in limits else f"{pledge.name} ({user_id})"
             limits[name] = pledge.cents
         return limits
@@ -118,9 +127,13 @@ class Store:
     def __init__(self) -> None:
         self.rounds: dict[int, Round] = {}
 
-    def start(self, chat_id: int, person: str, birthday: date) -> Round:
+    def start(
+        self, chat_id: int, person: str, birthday: date, organizer: str | None = None
+    ) -> Round:
         """Start a new round in a group. An older round in the same group is replaced."""
-        self.rounds[chat_id] = Round(chat_id=chat_id, person=person, birthday=birthday)
+        self.rounds[chat_id] = Round(
+            chat_id=chat_id, person=person, birthday=birthday, organizer=organizer
+        )
         return self.rounds[chat_id]
 
     def get(self, chat_id: int) -> Round | None:
