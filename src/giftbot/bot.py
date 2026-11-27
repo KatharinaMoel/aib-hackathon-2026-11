@@ -172,6 +172,7 @@ async def idealo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             checked.agent_input(),
             timeout_s=settings["timeout_s"],
             model=settings["model"],
+            max_budget_usd=settings["max_budget_usd"],
         )
         text = format_wishlist(checked, output)
         note = changes_note(checked, round_)
@@ -213,12 +214,13 @@ async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     log.error("update failed", exc_info=context.error)
 
 
-def build_application(token: str, timeout_s: float, model: str | None) -> Application:
+def build_application(
+    token: str, timeout_s: float, model: str | None, max_budget_usd: float
+) -> Application:
     """Wire the handlers. Updates run concurrently, so a slow /idealo does not block other chats."""
     app = Application.builder().token(token).concurrent_updates(True).build()
-    app.bot_data.update(
-        store=Store(), running=set(), settings={"timeout_s": timeout_s, "model": model}
-    )
+    settings = {"timeout_s": timeout_s, "model": model, "max_budget_usd": max_budget_usd}
+    app.bot_data.update(store=Store(), running=set(), settings=settings)
     groups, private = filters.ChatType.GROUPS, filters.ChatType.PRIVATE
     app.add_handler(TypeHandler(Update, log_update), group=-1)  # runs first, for every update
     app.add_handler(CommandHandler("gift", gift, filters=groups))
