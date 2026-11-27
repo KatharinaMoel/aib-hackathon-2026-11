@@ -3,7 +3,7 @@ revision = 3
 requires-python = ">=3.12"
 
 [[package]]
-name = "agents-with-taste"
+name = "aib-hackathon-idealo"
 version = "0.1.0"
 source = { virtual = "." }
 

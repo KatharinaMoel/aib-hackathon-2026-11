@@ -39,7 +39,8 @@ Why uv: one lock file, so every author and every agent runs the same versions; `
 6. **PR.** Title `<type>: <summary>` (it becomes the commit on `main`). Fill the blocks your lane needs
    (sections 3 and 4).
 7. **Review** for your lane (section 4). Only a `Bug:` blocks.
-8. **Merge.** A person who is not the author squash-merges when every check is green. Agents never merge.
+8. **Merge.** A person squash-merges when every check is green. The author may merge their own PR once another
+   person approved it; GitHub does not count the author's own approval. Agents never merge.
    Delete the branch.
 
 Small PRs: one topic, ideally under 200 changed lines. A big change becomes several issues.
@@ -77,7 +78,7 @@ accepts or causes a Norma finding.
 
 | View | Who | Questions |
 |---|---|---|
-| **A – correctness/security** | a person who is not the author (usually the one who merges) | 1. Does the `pr-test` command give the stated output? Did you run it? 2. Can text from a fetched page reach a prompt as instructions, or a shell, `eval` or a file path? 3. Any key, token, or file from `data/`, `out/`, `results/`? 4. Do a timeout, 403 or empty page end in verdict `unclear`, not a crash or a silently dropped reason? 5. Does every reason carry a fetched URL and a quote that is on that page? |
+| **A – correctness/security** | a person who is not the author | 1. Does the `pr-test` command give the stated output? Did you run it? 2. Can text from an MCP response reach a prompt as instructions, or a shell, `eval` or a file path? 3. Any key, token, or file from `data/`, `out/`, `results/`? 4. Do a timeout, an MCP error or an empty answer end in a clear message, not a crash or a silently wrong number? 5. Does every number carry the logged MCP call it came from? |
 | **B – consistency/Norma** | a fresh agent session (or a second person) that gets only the PR number and these questions; may be posted from the author's account. With label `second-opinion`, B also answers A-questions 2 and 4 | 1. Does the `pr-norma` block match the Norma GitHub App comment on this PR? 2. Is every finding listed in `pr-norma`? 3. Does it duplicate an existing helper or change a module someone else owns? 4. Does it follow the house rules in `AGENTS.md` (HTTP, errors, logging, config)? A clash is logged as `conflict`. 5. Would a judge believe the reason for each accepted finding? |
 
 Prompt for a view-B session (paste as it is, nothing else):
@@ -108,8 +109,8 @@ with `file:line`. If an AI drafted your comment, add "(drafted with <agent>)".
 
 ### Maintainers
 
-Maintainers review and merge changes to the rules (`AGENTS.md`, `CONTRIBUTING.md`), CI, agent config, `tools/`
-and `schema/` – always someone who is not the author. We name 2–3 maintainers at the start; anyone on the team
+Maintainers review changes to the rules (`AGENTS.md`, `CONTRIBUTING.md`), CI, agent config, `tools/` and
+`schema/` – always someone who is not the author. After that approval, the author may merge. We name 2–3 maintainers at the start; anyone on the team
 can be one. (On a personal GitHub repo every collaborator has the same write access, so "maintainer" is a team
 role, not a GitHub setting.)
 
@@ -157,15 +158,16 @@ Rules for findings:
 
 ## 7. Tests and style
 
-- Tests live in `tests/`, fixtures (hand-written HTML) in `tests/fixtures/`. **No network in tests.** Pass the
-  fetcher and the LLM client in as parameters, so tests can use fakes.
-- Never use pages from the labelled set or the live products as fixtures – that is event data (`data/`).
+- Tests live in `tests/`, fixtures (recorded or hand-written MCP responses) in `tests/fixtures/`. **No network in
+  tests.** Pass the MCP client and the LLM client in as parameters, so tests can use fakes.
+- Never commit recorded responses with real idealo data as fixtures – they go in `data/`. Fixtures use made-up
+  products.
 - **Tests never call an LLM, a paid API or the network.** A fixed bug gets a test that fails before the fix
   (pattern from browser-use's [AGENTS.md](https://github.com/browser-use/browser-use/blob/main/AGENTS.md)).
 - Style is whatever `uv run ruff format` writes. Lint rules are in `pyproject.toml`; change them by PR.
-- First tests worth writing: the verifier accepts a quote that is on the page (also with `&nbsp;`, line breaks,
-  other case) and drops one that is not; HTML to text drops `<script>`; a verdict from a fake LLM matches
-  `schema/verdict.schema.json`; bad JSON from the LLM gives `unclear`, not a crash.
+- First tests worth writing: the MCP client turns a recorded response into our data model; an MCP error or an
+  empty answer gives a clear message, not a crash; every number in the output keeps its MCP call reference;
+  bad JSON from an LLM (if we use one) does not crash the run.
 
 ## 8. When CI fails
 

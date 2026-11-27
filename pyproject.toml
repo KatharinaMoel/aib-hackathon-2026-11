@@ -2,9 +2,9 @@
 # Add runtime dependencies with `uv add <package>`; never with pip.
 # Read by uv, ruff and pytest. What every file is for: docs/FILES.md.
 [project]
-name = "agents-with-taste"
+name = "aib-hackathon-idealo"
 version = "0.1.0"
-description = "Hackathon agent: judges a software product's website, every reason with a checkable link."
+description = "Hackathon prototype on the idealo MCP; the idea is picked on the day."
 requires-python = ">=3.12"
 dependencies = []
 

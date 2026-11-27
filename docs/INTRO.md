@@ -1,80 +1,114 @@
-# Intro – how this repo came about, and a cheat sheet
+# Intro – the 10-minute walk-through, and a cheat sheet
 
-<!-- For the 15:00 intro and for anyone who joins later: what was prepared before the day, on what basis,
-what is decided and what we decide together. The last section is a one-page cheat sheet. See docs/FILES.md. -->
+<!-- For the team intro and for anyone who joins later: the task, how we work, the plan until 20:00.
+It follows the slides used in the intro. See docs/FILES.md. -->
 
-Katharina (repo owner) prepared this repo on 25 Nov 2026 with Claude Code and several review agents. **No agent
-code exists yet** – that is built together on the day. What exists is the ground we build on: the task, the
-rules, the checks and the research.
+Katharina prepared this repo on 25 Nov 2026 with Claude Code and several review agents. On 27 Nov the team
+switched from the Stackgini challenge to the **idealo challenge**. The Stackgini material is gone from the tree
+and stays in the git history (`git show c25c4bf:<path>`). The rules, the checks and the Norma setup stayed: they
+do not depend on the challenge. **No product code exists yet, and the idea is still open.**
 
-## 1. Principles behind it
+## 1. The task: idealo
 
-1. **Every claim can be checked.** A reason needs a link and a quote we fetched; model knowledge is never
-   evidence. The same goes for our docs: facts from outside have a link, guesses say "not verified".
-2. **Same rules for every author – person or agent.** One rule file (`AGENTS.md`) that every coding agent
-   reads; the same checks locally (`tools/check`) and in CI. That is also what the Norma track scores.
-3. **Fast where it is safe, careful where it matters.** Docs-only PRs go through the fast lane; code needs a
-   review by a person; rules, CI and risky code get a second view (`CONTRIBUTING.md`, section 4).
-4. **Explainable for a junior developer.** Every file says what it is for (`docs/FILES.md`, repo map in the
-   README).
-5. **Keep it simple.** First one working version end to end, then only changes that raise the score.
+"Build Something We Didn't Expect" ([idealo brief](https://aiagentsberlin.xyz/ah3-brief-idealo.pdf)): a
+prototype that needs idealo's commerce data – catalogue, categories, current and historical prices,
+availability, merchants, offers – to solve a real problem. Judged on four questions:
 
-## 2. How it was built (25 Nov)
+| Criterion | Question from the brief |
+|---|---|
+| Creativity | Does the project use the idealo MCP in an unexpected way? |
+| Meaningfulness | What real problem does it solve, and for whom? |
+| Use of the data | How do product, price, availability, merchant or category signals drive the result? |
+| Execution | Does the working prototype make the idea and its potential tangible? |
 
-| Step | What was done | Result in the repo |
-|---|---|---|
-| Read the briefs | all four public challenge briefs (Stackgini, Norma, idealo, Affinidi) | `README.md` (task, what we know, what we don't) |
-| Choose the challenge | Stackgini: the only one with an objective score (labelled examples, same live cases for everyone); Norma stacks on top ("any project you submit with a GitHub link can enter", Norma brief p. 1) | `README.md`, "How Stackgini and Norma fit together" |
-| Expert reviews (agents) | senior/OSS developer, project manager, eval engineer, hackathon juror, security; later Python maintainer, GitHub admin, Norma analyst, technical writer | `AGENTS.md`, `CONTRIBUTING.md`, PR template, CI, `docs/FILES.md` |
-| Compare with 6 open-source agent repos | OpenHands, crewAI, smolagents, browser-use, gpt-researcher, deer-flow – what their contribution rules, agent files and evals do | claim rule, accountability line in PRs, rules 11–13, fact IDs in the schema |
-| Stress test under time pressure | the day simulated in 15-minute steps with 4 people | lanes incl. `quick`, "review first while you wait", starter issues #9–10, fallbacks, emergency mode |
-| Literature | fake-shop detection, how fact-checkers judge credibility, AI-generated sites, vendor due diligence, persuasion tricks and dark patterns | `docs/RESEARCH.md` (11 rules), new signals in `docs/SIGNALS.md` |
-| Tested free data sources | RDAP, Wayback, crt.sh, Have I Been Pwned – each answered without a key | `docs/SIGNALS.md` |
+Submit by 19:45; selected teams pitch from 20:00. MCP details: `README.md`, "The idealo MCP".
 
-## 3. What is prepared, what we decide together at the start
+## 2. On top: Norma
 
-**Prepared – a proposal, change any of it:** uv + ruff + pytest; CI checks (`guard`, `pr`, `review-gate`);
-PR template in blocks; issue forms; 4 labels; lanes; house rules that mirror Norma rule IDs; Norma MCP config
-and check-and-fix skill; draft verdict schema; signal list; judge rules; eval protocol; 10 starter issues.
+From the [Norma brief](https://aiagentsberlin.xyz/ah3-brief-norma.pdf), "What your build must show":
 
-**We decide together at the start:**
-- what we keep, change or drop from this proposal – after everyone has read the task details;
-- who is caller, pipeline, judgement, eval, Norma/video (`docs/TEAM.md`, roles), and 2–3 maintainers;
-- package name and run command (starter issue #1);
-- model and search API (Tavily is offered by the organisers);
-- verdict values once Stackgini's labels are known (`schema/verdict.schema.json` is a draft);
-- which proposals from `docs/PROPOSALS.md` we keep.
+1. Every author runs the same checks: Norma MCP in each coding agent, checks while the code is written.
+2. At least 2 PRs from different authors, each checked by the Norma GitHub App (merged, for the submission).
+3. At least one finding fixed; a later check shows it gone.
+4. One Norma policy in the team workspace, with the rules the team agrees on.
 
-**Still open:** Stackgini's labelled examples (not received by 25 Nov); whether code may be written before the
-day (not stated in the briefs – that is why there is none).
+Scoring (100): policy and consistency 30 · the trade-off we accepted 30 · findings fixed 20 · Production-Ready
+Score at submission 20. **60 points depend on a short note in the submission form** – we draft it in
+`DEFENCE.md`. The workspace is named after the team. An empty repo scores zero; so does deleting code to make
+a finding disappear.
 
-## 4. Cheat sheet
+## 3. Our rules (`AGENTS.md`, the five that matter most today)
+
+1. **No keys or data in git or chat.** Keys in `.env`; real idealo responses in `data/`.
+2. **Every number has a source:** a logged idealo MCP call, never model knowledge.
+3. **Small PRs, agents never merge.** One topic per PR; another person merges when everything is green.
+4. **Norma in the loop.** `live_check` on each finished file; fix the cause; never delete code to hide a
+   finding.
+5. **Done means a command passed** (`tools/check` → `0 must fix`), and tests never call an LLM or the network.
+
+## 4. From issue to merge
+
+Issue → branch `<name>/<topic>` → build with your agent, with a test → Norma `live_check` → `tools/check` → PR
+with the template's blocks → **another person approves** → a person merges (the author may). While your PR waits, review someone else's.
+Details: `CONTRIBUTING.md`.
+
+**Review lanes** (set by `tools/pr_lane.py`): fast (Markdown only) · standard (code: review A) · two-views (rules,
+CI, tools, dependencies: reviews A and B) · quick (skeleton phase and emergency mode: three blocks, review A at
+the table). Only a comment starting with `Bug:` blocks a merge.
+
+**Proposal for today, to decide in the intro** (from the review on 27 Nov): with about four hours left, work in
+the `quick` lane until 18:15, with one review A at the table; review B only for changes to `AGENTS.md`; no
+issue required for small fixes. Note: `uv add` changes `pyproject.toml` and `uv.lock`, which always puts a PR
+into the two-views lane.
+
+## 5. Roles
+
+Caller (decides after 5 minutes of disagreement, keeps time) · Data (idealo MCP client, logged calls, recorded
+responses) · Domain logic (the rules and numbers behind the result – our finance experts, paired with one
+person who codes) · Demo + eval (case list, demo, backup who can run it from a fresh clone) · Norma + submission
+(workspace, policy, findings log, the note, the captain who submits) · 2–3 maintainers. Details: `docs/TEAM.md`.
+
+## 6. The plan until 20:00
+
+| Time | What |
+|---|---|
+| 15:45 | invite teammates; everyone checks in; team name |
+| 15:50 | in parallel: idealo tool list · Norma workspace + everyone's MCP |
+| 16:05 | idea decided (the caller decides) |
+| 16:15 | PR #9 merged; old PRs closed; Norma policy created |
+| 16:45 | walking skeleton merged (author A) |
+| 17:00 | second code PR merged (author B); first Norma check |
+| 17:45 | one finding fixed, one accepted with a reason |
+| 18:15 | feature freeze; draft the Norma note and the pitch |
+| 18:45 | rehearsal from a fresh clone |
+| 19:15 | last Norma check; note the score |
+| 19:30 | the captain submits (deadline 19:45) |
+| 20:00 | pitch, if selected |
+
+The source of these times is `docs/TEAM.md`, "Checkpoints".
+
+**Still open:** how our code gets an idealo token (`README.md`, "What is still open"). Help onsite: Nuno Silva
+at the Quality Clouds table (Norma), the idealo team (MCP).
+
+## 7. Cheat sheet
 
 **Setup (once):** `uv sync` · `cp .env.example .env` (add keys) · `tools/check` → `0 must fix`
 
-**Every task:**
+**Connect your agent:** `claude mcp add --transport http idealo https://mcp.idealo.com/mcp`, then `/mcp` →
+`idealo` → Authenticate, and `/mcp` → `norma` → Authenticate (with the account in the team workspace).
 
 | Step | Command / action |
 |---|---|
-| Claim | assign yourself the issue; max. 1 issue in progress + 1 PR waiting |
 | Branch | `git switch -c <name>/<topic>` |
 | Run | `uv run --env-file .env <command>` |
 | Check | `tools/check` (ruff, pytest, private files, tokens) |
 | PR | title `feat: …` / `fix: …` / `docs: …`; fill the blocks your lane needs |
-| While waiting | review someone else's PR, then start the next issue |
-
-**Lanes:** fast (only non-rule `.md`) → summary only · standard (code) → all blocks + review A by a person ·
-two-views (label `norma`/`second-opinion`, or rules/CI/tools/schema) → + review B · quick (until the skeleton is merged,
-and in emergency mode) → three blocks + review A at the table.
+| While waiting | review someone else's PR, then start the next task |
 
 **Comments:** `Bug:` blocks · `Question:` answer it, does not block · `Note:` information.
 
 **Never:** keys or event data in git or chat · agents merging · deleting code to hide a Norma finding ·
-researching the live products by hand · tests that call an LLM or the network.
-
-**Checkpoints** (`docs/TEAM.md`): 16:00 walking skeleton merged · 16:15 two code PRs from different authors ·
-17:30 Norma sweep 1 + video script · 18:15 DEFENCE + emergency mode · 18:30 rehearsal · 18:45 freeze ·
-19:00 blind cases · 19:40 verdict file sent.
+tests that call an LLM or the network.
 
 **Where to look:** task → `README.md` · rules → `AGENTS.md` · how to merge → `CONTRIBUTING.md` · plan →
-`docs/TEAM.md` · what to check → `docs/SIGNALS.md` · why → `docs/RESEARCH.md` · any file → `docs/FILES.md`.
+`docs/TEAM.md` · any file → `docs/FILES.md`.

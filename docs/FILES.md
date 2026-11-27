@@ -9,7 +9,7 @@ live in `.github/workflows/`.
 
 ## Start here
 
-**`README.md`** – the task, what the briefs say, what we don't know yet, our goal, the repo map, how to run.
+**`README.md`** – the task (idealo challenge), what the brief says, what is still open, the repo map, how to run.
 Why: the first page GitHub shows. Read by: everyone, judges (submission notes at the end). Change: by PR when we
 learn something; fill "For the submission" at 18:15.
 
@@ -28,32 +28,16 @@ prepared and what the team decides together at the start, and a one-page cheat s
 - **Read by:** everyone at the start; the owner for the intro talk.
 - **Change:** by PR (fast lane) when a decision changes.
 
-**`docs/RESEARCH.md`** and **`docs/research/1–4`** – what published research says about spotting fake sites,
-turned into 11 rules for our agent; the four files hold the full reviews with page numbers and source links.
-- **Why:** gives the judge rules and signals a basis beyond our own guesses.
-- **Read by:** the people working on signals and the judge; coding agents writing the judge prompt.
-- **Change:** add a source only after opening it; mark anything else "not verified".
-
-**`docs/STARTER_ISSUES.md`** – ten first tasks with done-when command, files and lane, and the order they
-merge in. Why: each person can claim a task right away instead of inventing work. Read by: people, who copy a
-row into a "Task" issue (or let their agent do it). Change: by PR; once the issues exist on GitHub, the issues
-are the source.
-
-**`docs/SIGNALS.md`** – what the agent can check, the free sources we tested, the MVP signals (MVP = minimum
-viable product, the smallest version that works end to end), pitfalls per signal, and the draft rules for the
-judge. Why: each signal is one module, one owner, one PR. Read by: people picking tasks, agents building a
-signal or the judge. Change: by PR when a signal is built, dropped or a rule changes.
-
 **`docs/PROPOSALS.md`** – practices that may help; not rules. Why: background for the decisions at the start. Read by:
 people. Change: cross out what we don't want; move a picked practice into `AGENTS.md` or `CONTRIBUTING.md` by
 PR.
 
-**`src/README.md`** – placeholder for the agent code (fetch → judge → verify). Why: git does not track empty
-folders; no agent code exists before the day on purpose. Read by: people, agents. Change: once code exists.
+**`src/README.md`** – placeholder for the code. Why: git does not track empty folders; the code is built on the
+day, once the team has picked the idea. Read by: people, agents. Change: once code exists.
 
-**`eval/README.md`** – the eval protocol (hold-out split, the two error counts, what else to report). Why: we
-measure every change the same way and do not tune on the hold-out. Read by: the eval owner and their agent.
-Change: by PR; the eval command goes into `AGENTS.md`, "Stack and commands".
+**`eval/README.md`** – how we check the prototype on a fixed case list. Empty until the idea is picked. Why: we
+measure every change the same way. Read by: the eval owner and their agent. Change: by PR; the eval command goes
+into `AGENTS.md`, "Stack and commands".
 
 ## Rules for people and agents
 
@@ -75,10 +59,11 @@ one of them in the same PR.
 file). Why: Norma scores fixed findings and accepted trade-offs; this log is our evidence and the source for
 `DEFENCE.md`. Read by: the Norma owner, people. Change: authors write findings in their PR's `pr-norma` block;
 the Norma owner copies them here in one PR at 17:30, so parallel branches do not clash on one table. Never
-rewrite old rows; the `16:40` row is an example.
+rewrite old rows.
 
-**`DEFENCE.md`** – the Norma submission: fixed, accepted and conflict, each with rule, file and reason. Why: the
-Norma brief asks for it. Read by: the Norma judges. Change: write it at 18:15 from `DECISIONS.md`.
+**`DEFENCE.md`** – the draft of the Norma note for the submission form: fixed, accepted and conflict, each with
+rule, file and reason, plus the policy. Why: 60 of 100 Norma points depend on that note. Read by: the person who
+submits. Change: write it at 18:15 from `DECISIONS.md`.
 
 ## Code and tests
 
@@ -104,17 +89,9 @@ value. Change: only with a team OK, together with `requires-python` in `pyprojec
 - `.venv` (not tracked; `uv sync` writes it): the "virtual environment", the installed packages for this project
   only. If it breaks, delete it and run `uv sync`.
 
-**`schema/verdict.schema.json`** – a JSON Schema: a file that describes the shape one verdict must have. It is
-a **draft** – its `call` values must be matched to Stackgini's labels first. Why: the agent, the eval and the
-verdict file need one shape; tests can check output against it. Fields whose `description` says "set by code"
-are never written by the LLM; the judge cites facts by `fact_id`, and code fills in URL, quote and time. What
-each field means: the `description` texts in the file. Read by: `tests/test_schema.py`, agents writing output
-code. Change: tell the team first, then PR (two-views lane).
-
-**`tests/`** – pytest tests: `test_schema.py` (the schema loads and requires the core fields) and
-`test_pr_lane.py` (below). `tests/fixtures/README.md` sets the rules for fixtures ("fixture" = fixed test input;
-here hand-written HTML of made-up `.example` products, never event data). Not covered: the allowed schema
-values, real verdicts, and agent code that does not exist yet; `CONTRIBUTING.md`, section 7 lists the first
+**`tests/`** – pytest tests: for now only `test_pr_lane.py` (below). `tests/fixtures/README.md` sets the rules
+for fixtures ("fixture" = fixed test input; here recorded or hand-written idealo MCP responses about made-up
+products). Not covered: product code, which does not exist yet; `CONTRIBUTING.md`, section 7 lists the first
 tests worth writing. Read by: pytest, CI `pr / lint-test`. Change: add a test with every module; tests never call
 an LLM, a paid API or the network.
 
