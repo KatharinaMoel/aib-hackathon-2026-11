@@ -1,0 +1,106 @@
+"""Turn a round and the agent's facts into the list the group sees (docs/GIFT_BOT.md, "What the group sees").
+
+What for: one verdict per observation comes from rules.decide_entry(); this module only writes it as text.
+Who reads it: whoever changes how the list looks; bot.py posts its output.
+How to change: text only. A rule about money or dates belongs in rules.py, with a test.
+"""
+
+from giftbot.config import RuleConfig
+from giftbot.rules import Verdict, decide_entry, format_day, format_eur
+from giftbot.split import split_shares
+from giftbot.state import Observation, Round
+
+_WEEKDAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+TELEGRAM_LIMIT = 4096
+
+
+def header(round_: Round) -> str:
+    """ "Wishlist for Lena · birthday Sat 5 Dec · pot €180.00 (4 pledged)" """
+    day = f"{_WEEKDAYS[round_.birthday.weekday()]} {format_day(round_.birthday)}"
+    pot = f"pot {format_eur(round_.pot_cents)} ({len(round_.pledges)} pledged)"
+    return f"Wishlist for {round_.person} · birthday {day} · {pot}"
+
+
+def _source(observation: Observation) -> str:
+    return f'from {observation.author}: "{observation.text}"'
+
+
+def _price_position(verdict: Verdict) -> str | None:
+    """A fact about today's price against the 30-day low, never a forecast."""
+    diff = verdict.above_low_cents
+    if diff is None:
+        return None
+    if diff > 0:
+        return f"today {format_eur(diff)} above the 30-day low"
+    if diff < 0:
+        return f"today {format_eur(-diff)} below the 30-day low"
+    return "today at the 30-day low"
+
+
+def _shares(round_: Round, total_cents: int) -> str | None:
+    shares = split_shares(total_cents, round_.limits_cents())
+    if not shares:
+        return None
+    low, high = min(shares.values()), max(shares.values())
+    if low == high:
+        return f"shares {format_eur(low)} each"
+    return f"shares {format_eur(low)} to {format_eur(high)}"
+
+
+def format_entry(round_: Round, observation: Observation, verdict: Verdict | None) -> str:
+    """One block of the list: ✔ with price, arrival, merchant and shares, or ✘ with the reason."""
+    if verdict is None:
+        return f"✘ {_source(observation)}\n  dropped: the agent returned nothing for it"
+    name = verdict.product_name or "No product"
+    if not verdict.ok or verdict.offer is None:
+        return f"✘ {name} · {_source(observation)}\n  dropped: {verdict.reason}"
+    offer = verdict.offer
+    rating = (
+        f"merchant {offer.shop_rating:g}" if offer.shop_rating is not None else "merchant unrated"
+    )
+    lines = [
+        f"✔ {name} · {_source(observation)}",
+        f"  {format_eur(offer.total_cents)} with shipping · arrives by "
+        f"{format_day(offer.late_delivery)} · {rating}",
+    ]
+    extra = [x for x in (_price_position(verdict), _shares(round_, offer.total_cents)) if x]
+    if extra:
+        lines.append("  " + " · ".join(extra))
+    if offer.url:
+        lines.append(f"  {offer.url}")
+    return "\n".join(lines)
+
+
+def format_wishlist(round_: Round, agent_output: dict, config: RuleConfig | None = None) -> str:
+    """The whole list, in the order of the observations."""
+    entries = {
+        e.get("observation_id"): e for e in agent_output.get("entries", []) if isinstance(e, dict)
+    }
+    blocks = [header(round_)]
+    for observation in round_.observations:
+        entry = entries.get(observation.id)
+        verdict = decide_entry(entry, round_.birthday, round_.pot_cents, config) if entry else None
+        blocks.append(format_entry(round_, observation, verdict))
+    return "\n\n".join(blocks)
+
+
+def split_message(text: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
+    """Cut a long text into Telegram-sized parts, at line breaks where possible."""
+    parts: list[str] = []
+    current = ""
+    for line in text.split("\n"):
+        while len(line) > limit:
+            if current:
+                parts.append(current)
+                current = ""
+            parts.append(line[:limit])
+            line = line[limit:]
+        candidate = f"{current}\n{line}" if current else line
+        if len(candidate) > limit:
+            parts.append(current)
+            current = line
+        else:
+            current = candidate
+    if current:
+        parts.append(current)
+    return parts
