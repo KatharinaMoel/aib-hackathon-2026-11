@@ -32,7 +32,7 @@ from giftbot.state import (
     parse_round_args,
     pledge_payload,
 )
-from giftbot.wishlist import format_wishlist, split_message
+from giftbot.wishlist import changes_note, format_wishlist, split_message
 
 log = logging.getLogger(__name__)
 
@@ -161,13 +161,18 @@ async def idealo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         await context.bot.send_chat_action(chat_id, "typing")
         settings = context.bot_data["settings"]
+        checked = round_.snapshot()  # ideas and pledges sent while the run goes do not change it
         output = await asyncio.to_thread(
             run_agent,
-            round_.agent_input(),
+            checked.agent_input(),
             timeout_s=settings["timeout_s"],
             model=settings["model"],
         )
-        for part in split_message(format_wishlist(round_, output)):
+        text = format_wishlist(checked, output)
+        note = changes_note(checked, round_)
+        if note:
+            text += "\n\n" + note
+        for part in split_message(text):
             await context.bot.send_message(chat_id, part, disable_web_page_preview=True)
     except AgentError as err:
         log.warning("agent run failed for chat %s: %s", chat_id, err)
