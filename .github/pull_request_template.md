@@ -20,7 +20,7 @@ Closes #…
 <!-- pr-test:start -->
 <!-- One command per line and what the reviewer should see. It must work from a fresh clone after `uv sync` and with .env set.
 Good: `uv run pytest tests/test_verify.py` → 4 passed
-Good: `uv run --env-file .env python -m <pkg> https://acme-crm.example` → verdict with 3 reasons, each with a URL -->
+Good: `uv run --env-file .env python -m <pkg> <input>` → the result, each number with its MCP call -->
 - `…` → …
 <!-- pr-test:end -->
 

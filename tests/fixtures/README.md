@@ -1,3 +1,3 @@
-A fixture is fixed input for a test. Here: hand-written HTML pages for tests. Made-up products only (`.example` domains).
-Never copy pages of the labelled set or the live products here – that is event data and belongs in `data/`.
+A fixture is fixed input for a test. Here: recorded or hand-written idealo MCP responses about made-up products.
+Never commit responses with real idealo data here – they are event data and belong in `data/`.
 See `docs/FILES.md`.
