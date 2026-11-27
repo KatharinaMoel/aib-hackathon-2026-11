@@ -106,6 +106,22 @@ def format_wishlist(round_: Round, agent_output: dict, config: RuleConfig | None
     return "\n\n".join(blocks)
 
 
+def changes_note(checked: Round, now: Round) -> str | None:
+    """Say what changed in the group while a run was going, so nobody thinks it was checked."""
+    notes = []
+    added = len(now.observations) - len(checked.observations)
+    if added > 0:
+        notes.append(f"{added} idea(s) added during the check are not in this list")
+    if now.pot_cents != checked.pot_cents:
+        notes.append(
+            f"the pot is now {format_eur(now.pot_cents)}; "
+            f"this list used {format_eur(checked.pot_cents)}"
+        )
+    if not notes:
+        return None
+    return "Note: " + "; ".join(notes) + ". Send /idealo again to include them."
+
+
 def split_message(text: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
     """Cut a long text into Telegram-sized parts, at line breaks where possible."""
     parts: list[str] = []

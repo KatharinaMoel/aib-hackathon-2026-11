@@ -7,6 +7,7 @@ How to change: keep it free of network and Telegram types. State lives in memory
 rounds (docs/GIFT_BOT.md, "The contract", has no storage yet).
 """
 
+import copy
 import re
 from dataclasses import dataclass, field
 from datetime import date
@@ -102,6 +103,10 @@ class Round:
             name = pledge.name if pledge.name not in limits else f"{pledge.name} ({user_id})"
             limits[name] = pledge.cents
         return limits
+
+    def snapshot(self) -> "Round":
+        """A copy that later /idea or pledges do not change: one /idealo run works on this copy."""
+        return copy.deepcopy(self)
 
     def agent_input(self) -> dict:
         """The input of one agent run, as in docs/GIFT_BOT.md, "Input to one agent run"."""

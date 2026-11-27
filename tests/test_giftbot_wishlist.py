@@ -3,7 +3,7 @@
 from datetime import date
 
 from giftbot.state import Store
-from giftbot.wishlist import format_wishlist, header, split_message
+from giftbot.wishlist import changes_note, format_wishlist, header, split_message
 
 
 def make_round():
@@ -73,6 +73,23 @@ def test_list_has_one_block_per_observation_in_order():
     assert (
         blocks[3] == '✘ from Tom: "she is stressed"\n  dropped: the agent returned nothing for it'
     )
+
+
+def test_list_uses_the_round_as_it_was_when_the_run_started():
+    # Bug seen on 27 Nov: an idea added during the run showed "the agent returned nothing for it",
+    # and the verdicts used a pot that had grown during the run.
+    round_ = make_round()
+    checked = round_.snapshot()
+    round_.observations.append(type(round_.observations[0])(4, "Ana", "she needs a coffee machine"))
+    round_.pledges[3] = type(round_.pledges[1])("Ana", 2000)
+
+    text = format_wishlist(checked, AGENT_OUTPUT)
+    assert "coffee machine" not in text
+    assert "pot €80.00 (2 answered)" in text
+    note = changes_note(checked, round_)
+    assert "1 idea(s) added during the check are not in this list" in note
+    assert "the pot is now €100.00; this list used €80.00" in note
+    assert changes_note(checked, checked.snapshot()) is None
 
 
 def test_split_message_keeps_parts_under_the_limit():
