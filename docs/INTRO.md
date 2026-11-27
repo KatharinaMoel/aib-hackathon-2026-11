@@ -42,6 +42,11 @@ and check-and-fix skill; draft verdict schema; signal list; judge rules; eval pr
 - who is caller, pipeline, judgement, eval, Norma/video (`docs/TEAM.md`, roles), and 2–3 maintainers;
 - package name and run command (starter issue #1);
 - model and search API (Tavily is offered by the organisers);
+- whether we also enter Nebius' new challenge "Evidence to Action"
+  ([brief](https://aiagentsberlin.xyz/ah3-brief-nebius-evidence-to-action.pdf), published on 27 Nov): the judge
+  call runs on Nebius Token Factory and we log each call. Only if one project may enter both Stackgini and
+  Nebius, and the eval score does not drop with that model. Starter issue #7 reads the model from `.env`, so
+  the switch and the switch back are one line;
 - verdict values once Stackgini's labels are known (`schema/verdict.schema.json` is a draft);
 - which proposals from `docs/PROPOSALS.md` we keep.
 
