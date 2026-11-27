@@ -29,7 +29,7 @@ because agent rules affect everyone's agent.
    `CONTRIBUTING.md`, section 6). **Never delete or bend code to make a finding disappear** – the Norma brief
    scores that with zero. Every fixed, accepted or conflicting finding goes into the PR's `pr-norma` block; the
    Norma owner copies them into `DECISIONS.md` at 17:30.
-6. **Keep it running.** First a working version end to end. After that, only changes that raise the eval score.
+6. **Keep it running.** First a working version end to end. After that, only changes that make the demo better.
 7. **Done means a command passed.** Every task names its check (test, eval or `tools/check`).
 8. **Reuse before you write.** Search for an existing helper first. One owner per shared module. Change only the
    files your task needs; no reformatting of other code.
@@ -40,7 +40,7 @@ because agent rules affect everyone's agent.
     `pr-test`.
 12. **Tests never call an LLM, a paid API or the network.** A fixed bug gets a test that fails before the fix.
 13. **Don't change the checker with the checked.** A PR that changes `src/` does not change `eval/`, the
-    fixtures or the scoring call. Change those in their own PR.
+    fixtures or the case list. Change those in their own PR.
 
 ## How we write
 

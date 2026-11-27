@@ -93,9 +93,11 @@ makes them possible.
 - **idealo** is *what* we build: a prototype that uses the idealo MCP. Judged on creativity, meaning, use of the
   data and execution.
 - **Norma** is *how* we build it: every author – person or coding agent – works under the same quality rules,
-  checked by Norma through MCP and a GitHub App on each pull request. It wants at least two merged PRs from
-  different authors, at least one fixed finding, and `DEFENCE.md` (fixed / accepted with a reason / conflict).
-  Most points go to consistency across authors and to trade-offs we accepted with a reason (Norma brief).
+  checked by Norma through MCP and a GitHub App on each pull request. The brief asks for four things: Norma MCP
+  in every coding agent; ≥ 2 PRs from different authors, checked by the GitHub App; ≥ 1 finding fixed; one Norma
+  policy in the team workspace. Scoring: policy and consistency 30, the accepted trade-off 30, findings fixed 20,
+  Production-Ready Score at submission 20. 60 points depend on a short note in the submission form; we draft
+  it in `DEFENCE.md` ([Norma brief](https://aiagentsberlin.xyz/ah3-brief-norma.pdf)).
 - Same repo, same PRs: Norma costs us little extra if we work through small PRs anyway. See `CONTRIBUTING.md`.
 
 ## Run

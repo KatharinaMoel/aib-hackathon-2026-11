@@ -59,10 +59,11 @@ one of them in the same PR.
 file). Why: Norma scores fixed findings and accepted trade-offs; this log is our evidence and the source for
 `DEFENCE.md`. Read by: the Norma owner, people. Change: authors write findings in their PR's `pr-norma` block;
 the Norma owner copies them here in one PR at 17:30, so parallel branches do not clash on one table. Never
-rewrite old rows; the `16:40` row is an example.
+rewrite old rows.
 
-**`DEFENCE.md`** – the Norma submission: fixed, accepted and conflict, each with rule, file and reason. Why: the
-Norma brief asks for it. Read by: the Norma judges. Change: write it at 18:15 from `DECISIONS.md`.
+**`DEFENCE.md`** – the draft of the Norma note for the submission form: fixed, accepted and conflict, each with
+rule, file and reason, plus the policy. Why: 60 of 100 Norma points depend on that note. Read by: the person who
+submits. Change: write it at 18:15 from `DECISIONS.md`.
 
 ## Code and tests
 
