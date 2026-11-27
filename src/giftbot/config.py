@@ -16,5 +16,8 @@ class RuleConfig:
     # The latest delivery date the merchant states must be at least this many days before the birthday.
     arrival_buffer_days: int = 2
     # Lowest accepted average merchant rating. idealo's scale goes up to 5 (seen in an offers response,
-    # 27 Nov 2026). A merchant without any rating is not rejected; the list shows it as "unrated".
+    # 27 Nov 2026).
     min_shop_rating: float = 4.0
+    # Most offers on idealo.it carry `shop.rating` {count: null, avg: null} (seen 27 Nov 2026). True: keep such
+    # offers and show them as "unrated shop"; a rated offer that passes is still preferred. False: drop them.
+    allow_unrated_merchants: bool = True
