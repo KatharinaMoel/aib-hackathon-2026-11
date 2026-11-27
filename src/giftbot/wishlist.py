@@ -41,10 +41,9 @@ def decide_round(
 
 
 def header(round_: Round) -> str:
-    """ "Wishlist for Lena · birthday Sat 5 Dec · pot €180.00 (4 answered)" """
+    """ "Wishlist for Lena · birthday Sat 5 Dec · pot €180.00 (4 pledged)" """
     day = f"{_WEEKDAYS[round_.birthday.weekday()]} {format_day(round_.birthday)}"
-    # "answered", not "pledged": a pledge of 0 is an answer, and the group must not see who gave nothing.
-    pot = f"pot {format_eur(round_.pot_cents)} ({len(round_.pledges)} answered)"
+    pot = f"pot {format_eur(round_.pot_cents)} ({len(round_.pledges)} pledged)"
     return f"Wishlist for {round_.person} · birthday {day} · {pot}"
 
 

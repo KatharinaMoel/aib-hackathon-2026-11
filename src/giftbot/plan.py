@@ -55,31 +55,64 @@ def _offer_count(entry: dict | None) -> int:
     return len(offers) if isinstance(offers, list) else 0
 
 
+def _product_ref(entry: dict | None) -> object:
+    product = entry.get("product") if isinstance(entry, dict) else None
+    return product.get("productRef") if isinstance(product, dict) else None
+
+
+def _one_line(text: str) -> str:
+    """Text from idealo is data: a line break in a name must not write its own line into the plan."""
+    return " ".join(text.split())
+
+
+def _web_link(url: str | None) -> str | None:
+    """Only a web address without any white space is posted as a link."""
+    if not url or not url.startswith(_LINK_STARTS) or url != "".join(url.split()):
+        return None
+    return url
+
+
 def build_plan(
     round_: Round, decided: list[Decided], read_on: date, config: RuleConfig | None = None
 ) -> GiftPlan | None:
     """Pick the ✔ entries the pot pays for together. None if no entry is on the list.
 
-    Order: explicit wishes (`kind` "said") first, then the order of the observations. An entry joins the plan
-    while the sum of the total prices stays within the pot; an entry that does not fit is left out.
+    Order: explicit wishes (`kind` "said") first, then the highest total price first, so the main gift is
+    picked before the small ones. An entry joins the plan while the sum of the total prices stays within the
+    pot; an entry that does not fit is left out, and so is a product that is already on the plan. This order
+    is a proposal (docs/GIFT_BOT.md, "Rules from the gift-pot draft"); the team has not set it.
+
+    An offer whose late delivery date lies before `read_on` is left out: that date is stale or mistyped.
 
     Order-by date: the offers were read on `read_on` and promise arrival by their late delivery date. Between
     the latest of these dates and the day the gift is needed lie some spare days. The group can wait that many
     days before it orders. This holds only if a merchant's delivery time stays the same on a later day, which
-    we could not verify (docs/GIFT_BOT.md, "Not verified"); the text of the plan says so.
+    we could not verify (docs/GIFT_BOT.md, "Not verified"); the text of the plan says so. No late delivery
+    date on the plan lies before `read_on`, so the order-by date is never later than the day the gift is needed.
     """
     config = config or RuleConfig()
     passing = [d for d in decided if d.verdict is not None and d.verdict.ok and d.verdict.offer]
-    passing.sort(key=lambda d: _kind(d.entry) != EXPLICIT_WISH)  # stable: keeps the given order
+    # Stable sort: entries with the same key keep the order of the observations.
+    passing.sort(
+        key=lambda d: (_kind(d.entry) != EXPLICIT_WISH, -(d.verdict.offer.total_cents or 0))
+    )
 
     items: list[PlanItem] = []
     total = 0
+    seen_refs: set[str] = set()
     for d in passing:
         offer = d.verdict.offer
         cost = offer.total_cents
         if cost is None or offer.late_delivery is None or total + cost > round_.pot_cents:
             continue
-        name = d.verdict.product_name or "Product without a name"
+        if offer.late_delivery < read_on:
+            continue
+        ref = _product_ref(d.entry)
+        if isinstance(ref, str) and ref in seen_refs:
+            continue
+        if isinstance(ref, str):
+            seen_refs.add(ref)
+        name = _one_line(d.verdict.product_name or "") or "Product without a name"
         items.append(PlanItem(d.observation, name, offer, _offer_count(d.entry)))
         total += cost
     if not items:
@@ -99,16 +132,16 @@ def build_plan(
 
 def _item_lines(number: int, item: PlanItem) -> list[str]:
     offer = item.offer
-    shop = offer.shop_name or "a merchant without a name"
+    shop = _one_line(offer.shop_name or "") or "a merchant without a name"
     lines = [
         f"{number}. {item.product_name} at {shop}, {format_eur(offer.total_cents)} with shipping, "
-        f"arrives by {format_day(offer.late_delivery)}"
+        f"arrives by {format_day(offer.late_delivery)} if ordered today"
     ]
-    # Text from idealo is data: only a web link is posted as a link.
-    if offer.url and offer.url.startswith(_LINK_STARTS):
-        lines.append(f"   {offer.url}")
+    link = _web_link(offer.url)
+    if link:
+        lines.append(f"   {link}")
     if item.offer_count == 1:
-        lines.append("   only one merchant found for this product")
+        lines.append("   only one offer found for this product")
     return lines
 
 
@@ -132,5 +165,5 @@ def format_plan(round_: Round, plan: GiftPlan, read_on: date) -> str:
         lines.append(
             f"{round_.organizer}, you place the order. I collect no money and order nothing."
         )
-    lines.append(f"Prices from idealo, {format_day(read_on)} {read_on.year}.")
+    lines.append(f"Prices read from idealo on {format_day(read_on)} {read_on.year} (UTC).")
     return "\n".join(lines)
