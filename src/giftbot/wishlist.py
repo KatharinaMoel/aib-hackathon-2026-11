@@ -52,16 +52,11 @@ def _source(observation: Observation) -> str:
     return f'from {observation.author}: "{observation.text}"'
 
 
-def _price_position(verdict: Verdict) -> str | None:
-    """A fact about today's price against the 30-day low, never a forecast."""
-    diff = verdict.above_low_cents
-    if diff is None:
+def _product_low(verdict: Verdict) -> str | None:
+    """The product's 30-day low across all shops: a fact about the product, not about the chosen offer."""
+    if verdict.product_low_cents is None:
         return None
-    if diff > 0:
-        return f"today {format_eur(diff)} above the 30-day low"
-    if diff < 0:
-        return f"today {format_eur(-diff)} below the 30-day low"
-    return "today at the 30-day low"
+    return f"product 30-day low: {format_eur(verdict.product_low_cents)}"
 
 
 def _shares(round_: Round, total_cents: int) -> str | None:
@@ -82,15 +77,13 @@ def format_entry(round_: Round, observation: Observation, verdict: Verdict | Non
     if not verdict.ok or verdict.offer is None:
         return f"✘ {name} · {_source(observation)}\n  dropped: {verdict.reason}"
     offer = verdict.offer
-    rating = (
-        f"merchant {offer.shop_rating:g}" if offer.shop_rating is not None else "merchant unrated"
-    )
+    rating = f"merchant {offer.shop_rating:g}" if offer.shop_rating is not None else "unrated shop"
     lines = [
         f"✔ {name} · {_source(observation)}",
         f"  {format_eur(offer.total_cents)} with shipping · arrives by "
         f"{format_day(offer.late_delivery)} · {rating}",
     ]
-    extra = [x for x in (_price_position(verdict), _shares(round_, offer.total_cents)) if x]
+    extra = [x for x in (_product_low(verdict), _shares(round_, offer.total_cents)) if x]
     if extra:
         lines.append("  " + " · ".join(extra))
     if offer.url:

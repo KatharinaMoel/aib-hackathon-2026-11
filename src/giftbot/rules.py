@@ -124,12 +124,15 @@ def check_offer(offer: Offer, birthday: date, config: RuleConfig) -> str | None:
         return "price unknown"
     if offer.shipping_cents is None:
         return "shipping cost unknown"
+    # The latest date the merchant states, never the earliest. With deliveryStatus "UNKNOWN" it is null.
     if offer.late_delivery is None:
-        return "arrival date unknown"
+        return "no delivery date"
     needed_by = birthday - timedelta(days=config.arrival_buffer_days)
     if offer.late_delivery > needed_by:
         return f"arrives by {format_day(offer.late_delivery)}, needed by {format_day(needed_by)}"
-    if offer.shop_rating is not None and offer.shop_rating < config.min_shop_rating:
+    if offer.shop_rating is None:
+        return None if config.allow_unrated_merchants else "merchant has no rating"
+    if offer.shop_rating < config.min_shop_rating:
         return f"merchant rated {offer.shop_rating:g} of 5, minimum is {config.min_shop_rating:g}"
     return None
 
@@ -144,7 +147,8 @@ class Verdict:
     product_name: str | None
     offer: Offer | None
     missing_cents: int | None
-    above_low_cents: int | None
+    # The product's lowest price in idealo's price history (all shops), not a fact about the chosen offer.
+    product_low_cents: int | None
 
 
 def _sort_key(offer: Offer) -> tuple[bool, int]:
@@ -153,10 +157,18 @@ def _sort_key(offer: Offer) -> tuple[bool, int]:
     return (total is None, total or 0)
 
 
+def _best_key(offer: Offer) -> tuple[bool, int]:
+    """Among offers that pass: rated merchants first, then the lowest total."""
+    return (offer.shop_rating is None, offer.total_cents or 0)
+
+
 def decide_entry(
     entry: dict, birthday: date, pot_cents: int, config: RuleConfig | None = None
 ) -> Verdict:
-    """Pick the cheapest offer that arrives in time from an accepted merchant, then compare it with the pot."""
+    """Pick the best offer that arrives in time from an accepted merchant, then compare it with the pot.
+
+    Best: a rated merchant before an unrated one, then the lowest total (price + shipping).
+    """
     config = config or RuleConfig()
     product = entry.get("product") if isinstance(entry.get("product"), dict) else {}
     name = product.get("name") if isinstance(product.get("name"), str) else None
@@ -181,7 +193,7 @@ def decide_entry(
             f"no offer passes; the cheapest one: {check_offer(offers[0], birthday, config)}"
         )
 
-    best = passing[0]
+    best = min(passing, key=_best_key)
     total = best.total_cents
     if total > pot_cents:
         missing = total - pot_cents
@@ -193,5 +205,4 @@ def decide_entry(
 
     stats = entry.get("price_stats") if isinstance(entry.get("price_stats"), dict) else {}
     low_cents = parse_eur_cents(stats.get("low_text"))
-    above_low = best.price_cents - low_cents if low_cents is not None else None
-    return Verdict(entry.get("observation_id"), True, None, name, best, None, above_low)
+    return Verdict(entry.get("observation_id"), True, None, name, best, None, low_cents)

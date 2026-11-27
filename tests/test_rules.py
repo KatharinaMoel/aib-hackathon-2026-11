@@ -117,8 +117,7 @@ def test_check_offer_reasons():
         == "shipping cost unknown"
     )
     assert (
-        check_offer(offer_from_contract(offer(late=None)), BIRTHDAY, config)
-        == "arrival date unknown"
+        check_offer(offer_from_contract(offer(late=None)), BIRTHDAY, config) == "no delivery date"
     )
     assert (
         check_offer(offer_from_contract(offer(late="2026-12-04")), BIRTHDAY, config)
@@ -154,7 +153,7 @@ def test_cheapest_passing_offer_wins_over_cheaper_bad_ones():
     assert verdict.ok
     assert verdict.offer.shop_name == "Good"
     assert verdict.offer.total_cents == 2400
-    assert verdict.above_low_cents == 150
+    assert verdict.product_low_cents == 1850
     assert verdict.product_name == "Example Chalk Bag"
 
 
@@ -192,9 +191,107 @@ def test_skipped_and_empty_entries():
 
 
 def test_missing_price_stats_gives_no_price_position():
-    assert decide_entry(entry(offer(), price_stats=None), BIRTHDAY, 6000).above_low_cents is None
+    assert decide_entry(entry(offer(), price_stats=None), BIRTHDAY, 6000).product_low_cents is None
 
 
 def test_threshold_comes_from_the_config():
     strict = RuleConfig(arrival_buffer_days=5, min_shop_rating=4.8)
     assert not decide_entry(entry(offer()), BIRTHDAY, 6000, strict).ok
+
+
+# Offers shaped like `get_product_offers` on idealo.it (27 Nov 2026): most shops have
+# shop.rating {count: null, avg: null}; some offers have deliveryStatus "UNKNOWN" and both dates null.
+# Shop names and prices are made up.
+def mcp_offer(
+    price="39,20 €", shipping="0,00 €", avg=None, status="SHORT", late="2026-12-02", early=None
+):
+    count = None if avg is None else 25
+    return {
+        "price": price,
+        "minShippingCost": shipping,
+        "shop": {"name": "Shop IT", "rating": {"count": count, "avg": avg}, "isMarketplace": True},
+        "payments": [{"costCode": "PP"}],
+        "delivery": {
+            "deliveryStatus": status,
+            "earlyDeliveryDate": early,
+            "lateDeliveryDate": late,
+        },
+        "relocatorUrl": "https://example.invalid/go",
+    }
+
+
+def test_null_rating_is_kept_and_marked_unrated_when_allowed():
+    parsed = offer_from_mcp(mcp_offer(avg=None))
+    assert parsed.shop_rating is None
+    assert check_offer(parsed, BIRTHDAY, RuleConfig(allow_unrated_merchants=True)) is None
+
+
+def test_null_rating_is_dropped_when_not_allowed():
+    parsed = offer_from_mcp(mcp_offer(avg=None))
+    config = RuleConfig(allow_unrated_merchants=False)
+    assert check_offer(parsed, BIRTHDAY, config) == "merchant has no rating"
+
+
+@pytest.mark.parametrize(
+    ("avg", "reason"), [(3.6, "merchant rated 3.6 of 5, minimum is 4"), (4.5, None)]
+)
+def test_rating_below_the_minimum_is_dropped(avg, reason):
+    assert check_offer(offer_from_mcp(mcp_offer(avg=avg)), BIRTHDAY, RuleConfig()) == reason
+
+
+def test_unknown_delivery_with_null_dates_is_dropped_not_crashed():
+    parsed = offer_from_mcp(mcp_offer(status="UNKNOWN", late=None, early=None))
+    assert parsed.late_delivery is None
+    assert check_offer(parsed, BIRTHDAY, RuleConfig()) == "no delivery date"
+
+
+def test_arrival_uses_the_late_date_not_the_early_one():
+    parsed = offer_from_mcp(mcp_offer(early="2026-12-01", late="2026-12-04"))
+    assert check_offer(parsed, BIRTHDAY, RuleConfig()) == "arrives by 4 Dec, needed by 3 Dec"
+
+
+def test_unknown_delivery_only_offer_drops_the_idea():
+    verdict = decide_entry(entry(offer(late=None)), BIRTHDAY, pot_cents=8000)
+    assert not verdict.ok
+    assert verdict.reason == "no offer passes; the cheapest one: no delivery date"
+
+
+def test_rated_passing_offer_is_chosen_over_a_cheaper_unrated_one():
+    verdict = decide_entry(
+        entry(
+            offer(price="15,00 €", rating=None, name="Cheap unrated"),
+            offer(price="20,00 €", rating=4.5, name="Rated"),
+        ),
+        BIRTHDAY,
+        pot_cents=8000,
+    )
+    assert verdict.ok
+    assert verdict.offer.shop_name == "Rated"
+
+
+def test_unrated_offer_is_chosen_when_no_rated_offer_passes():
+    verdict = decide_entry(
+        entry(
+            offer(price="15,00 €", rating=None, name="Unrated"),
+            offer(price="12,00 €", rating=3.6, name="Badly rated"),
+        ),
+        BIRTHDAY,
+        pot_cents=8000,
+    )
+    assert verdict.ok
+    assert verdict.offer.shop_name == "Unrated"
+    assert verdict.offer.shop_rating is None
+
+
+def test_total_with_shipping_decides_not_the_price():
+    verdict = decide_entry(
+        entry(
+            offer(price="39,20 €", shipping="17,54 €", name="Low price, high shipping"),
+            offer(price="47,33 €", shipping="0,00 €", name="Free shipping"),
+        ),
+        BIRTHDAY,
+        pot_cents=8000,
+    )
+    assert verdict.ok
+    assert verdict.offer.shop_name == "Free shipping"
+    assert verdict.offer.total_cents == 4733
