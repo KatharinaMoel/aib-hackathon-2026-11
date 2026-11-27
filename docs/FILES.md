@@ -95,6 +95,10 @@ products). Not covered: product code, which does not exist yet; `CONTRIBUTING.md
 tests worth writing. Read by: pytest, CI `pr / lint-test`. Change: add a test with every module; tests never call
 an LLM, a paid API or the network.
 
+**`src/giftbot/`** – the gift bot. `src/giftbot/README.md` says how to run, try, test and change the Telegram
+side (`bot.py`, `state.py`, `agent.py`, `wishlist.py`); `docs/GIFT_BOT.md` holds the idea and the contract.
+Read by: everyone who works on the bot, and their agents. Change: by PR, with a test in `tests/test_giftbot_*.py`.
+
 **`tests/test_pr_lane.py`** – tests for `tools/pr_lane.py`: which files make a PR fast, standard or two-views;
 the block and title checks; that review A from the author never counts while review B may. Why: CI uses the same
 functions, so a green test means CI applies these rules. Change: with every change to `tools/pr_lane.py`.

@@ -6,7 +6,9 @@ name = "aib-hackathon-idealo"
 version = "0.1.0"
 description = "Hackathon prototype on the idealo MCP; the idea is picked on the day."
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "python-telegram-bot>=22.8",
+]
 
 # Tools for writing and checking code; `uv sync` installs them, the agent itself does not need them.
 [dependency-groups]
