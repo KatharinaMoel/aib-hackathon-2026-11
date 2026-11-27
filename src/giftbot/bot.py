@@ -14,7 +14,14 @@ import asyncio
 import logging
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    TypeHandler,
+    filters,
+)
 
 from giftbot.agent import AgentError, run_agent
 from giftbot.rules import format_eur
@@ -133,15 +140,18 @@ async def idealo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     round_ = context.bot_data["store"].get(chat_id)
     if round_ is None or not round_.observations:
+        log.info("idealo stopped in chat %s: no round or no idea", chat_id)
         await update.effective_message.reply_text(
             "First /gift <name> <date>, then at least one /idea."
         )
         return
     if not round_.pledges:
+        log.info("idealo stopped in chat %s: no pledge", chat_id)
         await update.effective_message.reply_text("Nobody pledged yet. Use /pledge first.")
         return
     running: set[int] = context.bot_data["running"]
     if chat_id in running:
+        log.info("idealo stopped in chat %s: a run is already going", chat_id)
         await update.effective_message.reply_text("I am already checking this list.")
         return
     running.add(chat_id)
@@ -166,6 +176,23 @@ async def idealo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         running.discard(chat_id)
 
 
+async def group_only(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_message.reply_text(
+        "This command works in a group. Add me to a group, then send it there.\n\n" + HELP
+    )
+
+
+async def log_update(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Log what arrives: chat, chat type and the command word. Never the text people wrote."""
+    message, chat = update.effective_message, update.effective_chat
+    if message is None or chat is None:
+        log.info("update %s without a message", update.update_id)
+        return
+    text = message.text or ""
+    kind = text.split()[0] if text.startswith("/") else ("text" if text else "other")
+    log.info("update: chat %s (%s), %s", chat.id, chat.type, kind)
+
+
 async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     log.error("update failed", exc_info=context.error)
 
@@ -177,12 +204,15 @@ def build_application(token: str, timeout_s: float, model: str | None) -> Applic
         store=Store(), running=set(), settings={"timeout_s": timeout_s, "model": model}
     )
     groups, private = filters.ChatType.GROUPS, filters.ChatType.PRIVATE
+    app.add_handler(TypeHandler(Update, log_update), group=-1)  # runs first, for every update
     app.add_handler(CommandHandler("gift", gift, filters=groups))
     app.add_handler(CommandHandler("idea", idea, filters=groups))
     app.add_handler(CommandHandler("pledge", pledge, filters=groups))
     app.add_handler(CommandHandler(["idealo", "wishlist"], idealo, filters=groups))
     app.add_handler(CommandHandler("start", start, filters=private))
     app.add_handler(CommandHandler("help", help_cmd))
+    group_commands = ["gift", "idea", "pledge", "idealo", "wishlist"]
+    app.add_handler(CommandHandler(group_commands, group_only, filters=private))
     app.add_handler(MessageHandler(private & filters.TEXT & ~filters.COMMAND, private_text))
     app.add_error_handler(on_error)
     return app

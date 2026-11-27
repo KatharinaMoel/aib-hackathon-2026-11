@@ -34,6 +34,16 @@ def envelope(result, is_error=False):
     return json.dumps({"type": "result", "is_error": is_error, "result": result})
 
 
+def test_run_does_not_pass_the_bot_token(tmp_path, monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "made-up-token")
+    monkeypatch.setenv("SOME_OTHER_SETTING", "kept")
+    runner = fake_runner(envelope(json.dumps(OUTPUT)))
+    run_agent(INPUT, runner=runner, runs_dir=tmp_path)
+    env = runner.calls[0][1]["env"]
+    assert "TELEGRAM_BOT_TOKEN" not in env
+    assert env["SOME_OTHER_SETTING"] == "kept"
+
+
 def test_run_returns_contract_output_and_saves_raw_answer(tmp_path):
     runner = fake_runner(envelope("Here:\n```json\n" + json.dumps(OUTPUT) + "\n```"))
     assert run_agent(INPUT, runner=runner, runs_dir=tmp_path) == OUTPUT

@@ -9,6 +9,7 @@ How to change: the command is built in build_command(). Tests pass a fake runner
 
 import json
 import logging
+import os
 import subprocess
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -29,6 +30,8 @@ ALLOWED_TOOLS = (
 )
 
 Runner = Callable[..., subprocess.CompletedProcess]
+# Environment variables the agent run never gets.
+HIDDEN_ENV = frozenset({"TELEGRAM_BOT_TOKEN"})
 
 
 class AgentError(Exception):
@@ -113,8 +116,10 @@ def run_agent(
     """Run the agent once and return the contract's output. Raises AgentError on any failure."""
     command = build_command(build_prompt(agent_input), model)
     log.info("agent run started: %d observation(s)", len(agent_input.get("observations", [])))
+    # The run needs no Telegram access, so it does not get the bot token.
+    env = {k: v for k, v in os.environ.items() if k not in HIDDEN_ENV}
     try:
-        done = runner(command, capture_output=True, text=True, timeout=timeout_s, cwd=cwd)
+        done = runner(command, capture_output=True, text=True, timeout=timeout_s, cwd=cwd, env=env)
     except subprocess.TimeoutExpired as err:
         raise AgentError(f"the run took longer than {timeout_s:g} s") from err
     except FileNotFoundError as err:
