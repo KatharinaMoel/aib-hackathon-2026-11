@@ -4,8 +4,9 @@
 what is decided and what we decide together. The last section is a one-page cheat sheet. See docs/FILES.md. -->
 
 Katharina (repo owner) prepared this repo on 25 Nov 2026 with Claude Code and several review agents. **No agent
-code exists yet** – that is built together on the day. What exists is the ground we build on: the task, the
-rules, the checks and the research.
+code is merged yet.** A walking skeleton waits as draft PR #2 (URL → verdict with a stub judge, no LLM); we use it
+only if the organisers allow code written before the day, otherwise we close it unused and build it together.
+What else exists is the ground we build on: the task, the rules, the checks and the research.
 
 ## 1. Principles behind it
 
@@ -46,7 +47,7 @@ and check-and-fix skill; draft verdict schema; signal list; judge rules; eval pr
 - which proposals from `docs/PROPOSALS.md` we keep.
 
 **Still open:** Stackgini's labelled examples (not received by 25 Nov); whether code may be written before the
-day (not stated in the briefs – that is why there is none).
+day (not stated in the briefs – that is why the skeleton in PR #2 stays a draft until we ask at the kickoff).
 
 ## 4. Cheat sheet
 
